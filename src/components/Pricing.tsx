@@ -165,10 +165,10 @@ export function Pricing() {
           <Plan
             name="Enterprise"
             price="₹1000/month"
-            description="Good for anyone who wants to get started."
+            description="Good for anyone who wants to manage multiple from single console."
             href="/register"
             features={[
-              'Can add upto 10  properties',
+              'Can add upto 10 properties',
               'Admin Console',
               'Cloud based software',
               'Can add unlimited rooms',
