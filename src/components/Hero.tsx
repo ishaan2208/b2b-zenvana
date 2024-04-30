@@ -2,8 +2,8 @@ import Image from 'next/image'
 
 import { Button } from '@/components/Button'
 import { Container } from '@/components/Container'
-import logoLaravel from '@/images/logos/svg1.svg'
-import logoMirage from '@/images/logos/svg4.svg'
+import logoLaravel from '@/images/logos/svg4.svg'
+import logoMirage from '@/images/logos/svg1.svg'
 import logoStatamic from '@/images/logos/svg3.svg'
 // import logoStaticKit from '@/images/logos/statickit.svg'
 // import logoTransistor from '@/images/logos/transistor.svg'
@@ -13,7 +13,7 @@ export function Hero() {
   return (
     <Container className="pb-16 pt-20 text-center lg:pt-32">
       <h1 className="mx-auto max-w-4xl font-display text-5xl font-medium tracking-tight text-slate-900 sm:text-7xl">
-        Efficient property management{' '}
+        Efficient Hotel Management{' '}
         <span className="relative whitespace-nowrap text-blue-600">
           <svg
             aria-hidden="true"

@@ -108,8 +108,8 @@ export function Header() {
               href="#"
               aria-label="Home"
             >
-              <Logo className=" h-10 w-auto" />
-              <h1 className=" font-bold">StaySystems</h1>
+              <Logo className=" h-20 w-auto" />
+              {/* <h1 className=" font-bold">StaySystems</h1> */}
             </Link>
             <div className="hidden md:flex md:gap-x-6">
               <NavLink href="#features">Features</NavLink>
@@ -121,7 +121,7 @@ export function Header() {
             {/* <div className="hidden md:block">
               <NavLink href="/login">Sign in</NavLink>
             </div> */}
-            <Button href="/register" className=" bg-black">
+            <Button href="/register" color="blue">
               <span>
                 Get started <span className="hidden lg:inline">today</span>
               </span>
