@@ -2,12 +2,12 @@ import Image from 'next/image'
 
 import { Button } from '@/components/Button'
 import { Container } from '@/components/Container'
-import logoLaravel from '@/images/logos/laravel.svg'
-import logoMirage from '@/images/logos/mirage.svg'
-import logoStatamic from '@/images/logos/statamic.svg'
-import logoStaticKit from '@/images/logos/statickit.svg'
-import logoTransistor from '@/images/logos/transistor.svg'
-import logoTuple from '@/images/logos/tuple.svg'
+import logoLaravel from '@/images/logos/svg1.svg'
+import logoMirage from '@/images/logos/svg4.svg'
+import logoStatamic from '@/images/logos/svg3.svg'
+// import logoStaticKit from '@/images/logos/statickit.svg'
+// import logoTransistor from '@/images/logos/transistor.svg'
+// import logoTuple from '@/images/logos/tuple.svg'
 
 export function Hero() {
   return (
@@ -57,22 +57,22 @@ export function Hero() {
       </div>
       <div className="mt-36 lg:mt-44">
         <p className="font-display text-base text-slate-900">
-          Trusted by these six companies so far
+          Trusted by these companies so far
         </p>
         <ul
           role="list"
           className="mt-8 flex items-center justify-center gap-x-8 sm:flex-col sm:gap-x-0 sm:gap-y-10 xl:flex-row xl:gap-x-12 xl:gap-y-0"
         >
           {[
+            // [
+            //   { name: 'Transistor', logo: logoTransistor },
+            //   { name: 'Tuple', logo: logoTuple },
+            //   { name: 'StaticKit', logo: logoStaticKit },
+            // ],
             [
-              { name: 'Transistor', logo: logoTransistor },
-              { name: 'Tuple', logo: logoTuple },
-              { name: 'StaticKit', logo: logoStaticKit },
-            ],
-            [
-              { name: 'Mirage', logo: logoMirage },
-              { name: 'Laravel', logo: logoLaravel },
-              { name: 'Statamic', logo: logoStatamic },
+              { name: 'Hotel White Sands', logo: logoMirage },
+              { name: 'Hotel Limewood', logo: logoLaravel },
+              { name: 'Hotel Uk07', logo: logoStatamic },
             ],
           ].map((group, groupIndex) => (
             <li key={groupIndex}>
@@ -82,7 +82,12 @@ export function Hero() {
               >
                 {group.map((company) => (
                   <li key={company.name} className="flex">
-                    <Image src={company.logo} alt={company.name} unoptimized />
+                    <Image
+                      src={company.logo}
+                      className={` size-36`}
+                      alt={company.name}
+                      unoptimized
+                    />
                   </li>
                 ))}
               </ul>
