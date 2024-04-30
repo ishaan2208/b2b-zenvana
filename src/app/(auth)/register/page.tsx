@@ -6,6 +6,9 @@ import { Logo } from '@/components/Logo'
 import { SlimLayout } from '@/components/SlimLayout'
 import { type Metadata } from 'next'
 import { useState } from 'react'
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
+import { set } from 'react-hook-form'
 
 // export const metadata: Metadata = {
 //   title: 'Sign Up',
@@ -18,6 +21,26 @@ export default function Register() {
   const [lastname, setLastname] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
+  const router = useRouter()
+
+  const onSubmit = (e: any) => {
+    e.preventDefault()
+    axios
+      .post(`${process.env.NEXT_PUBLIC_API_URL}/leads`, {
+        firstName: firstname,
+        lastName: lastname,
+        phone,
+        email,
+      })
+      .then((res) => {
+        console.log(res)
+        setFirstname('')
+        setLastname('')
+        setPhone('')
+        setEmail('')
+        router.push('/')
+      })
+  }
 
   return (
     <SlimLayout>
@@ -99,13 +122,7 @@ export default function Register() {
         </SelectField> */}
         <div className="col-span-full">
           <Button
-            onClick={() => {
-              console.log('clicked')
-              console.log(firstname)
-              console.log(lastname)
-              console.log(phone)
-              console.log(email)
-            }}
+            onClick={onSubmit}
             type="submit"
             variant="solid"
             color="blue"

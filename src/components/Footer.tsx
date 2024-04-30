@@ -13,7 +13,7 @@ export function Footer() {
           <nav className="mt-10 text-sm" aria-label="quick links">
             <div className="-my-1 flex justify-center gap-x-6">
               <NavLink href="#features">Features</NavLink>
-              <NavLink href="#testimonials">Testimonials</NavLink>
+              {/* <NavLink href="#testimonials">Testimonials</NavLink> */}
               <NavLink href="#pricing">Pricing</NavLink>
             </div>
           </nav>
@@ -40,7 +40,7 @@ export function Footer() {
             </Link>
           </div>
           <p className="mt-6 text-sm text-slate-500 sm:mt-0">
-            Copyright &copy; {new Date().getFullYear()} TaxPal. All rights
+            Copyright &copy; {new Date().getFullYear()} StaySytems. All rights
             reserved.
           </p>
         </div>

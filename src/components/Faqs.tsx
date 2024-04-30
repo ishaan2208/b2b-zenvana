@@ -6,53 +6,49 @@ import backgroundImage from '@/images/background-faqs.jpg'
 const faqs = [
   [
     {
-      question: 'Does TaxPal handle VAT?',
+      question: 'What is StaySystems?',
       answer:
-        'Well no, but if you move your company offshore you can probably ignore it.',
+        'StaySystems is a cutting-edge property management software designed to streamline operations, enhance guest experiences, and increase revenue for property managers and owners. It provides tools that simplify the work of front office staff and ensures the efficient management of your properties.',
     },
     {
-      question: 'Can I pay for my subscription via purchase order?',
-      answer: 'Absolutely, we are happy to take your money in all forms.',
+      question:
+        'How does StaySystems make the front office operations easier??',
+      answer:
+        'Our software automates many routine tasks, including reservations, guest check-in/check-out, and billing, which significantly reduces manual workload and minimizes the chance of human error. This allows front office staff to focus more on providing exceptional service to guests.',
     },
     {
-      question: 'How do I apply for a job at TaxPal?',
+      question: 'Can StaySystems help in preventing revenue leakage and theft?',
       answer:
-        'We only hire our customers, so subscribe for a minimum of 6 months and then let’s talk.',
+        'Yes, StaySystems includes robust security features and detailed auditing capabilities to track all transactions and interactions. This transparency helps prevent any potential revenue leakage and theft, ensuring financial safety and integrity.',
     },
   ],
   [
     {
-      question: 'What was that testimonial about tax fraud all about?',
+      question: 'In what ways does StaySystems enhance guest experiences?',
       answer:
-        'TaxPal is just a software application, ultimately your books are your responsibility.',
+        'StaySystems enhances guest experiences by enabling seamless interactions from booking to check-out. Our platform includes features for personalized service, such as tailored recommendations and efficient issue resolution, ensuring every guest feels valued and well cared for.',
     },
     {
-      question:
-        'TaxPal sounds horrible but why do I still feel compelled to purchase?',
+      question: 'How can StaySystems increase our property’s revenue?',
       answer:
-        'This is the power of excellent visual design. You just can’t resist it, no matter how poorly it actually functions.',
+        'By improving operational efficiency and guest satisfaction, StaySystems helps increase repeat bookings and positive reviews. Additionally, our analytics tools provide insights into revenue management, helping you make data-driven decisions to optimize pricing and promotions.',
     },
     {
-      question:
-        'I found other companies called TaxPal, are you sure you can use this name?',
+      question: 'Is StaySystems suitable for all types of properties?',
       answer:
-        'Honestly not sure at all. We haven’t actually incorporated or anything, we just thought it sounded cool and made this website.',
+        'Absolutely! StaySystems is versatile and can be tailored to meet the needs of various types of properties, including hotels, resorts, vacation rentals, and residential complexes.',
     },
   ],
   [
     {
-      question: 'How do you generate reports?',
+      question: 'What support does StaySystems offer to its users?',
       answer:
-        'You just tell us what data you need a report for, and we get our kids to create beautiful charts for you using only the finest crayons.',
+        'We provide 24/7 customer support through multiple channels including phone, email, and live chat. Our dedicated team is always ready to help you with any questions or issues you may encounter.',
     },
     {
-      question: 'Can we expect more inventory features?',
-      answer: 'In life it’s really better to never expect anything at all.',
-    },
-    {
-      question: 'I lost my password, how do I get into my account?',
+      question: 'How can I get started with StaySystems?',
       answer:
-        'Send us an email and we will send you a copy of our latest password spreadsheet so you can find your information.',
+        'Getting started is easy! Contact our sales team through our website, and we’ll guide you through the setup process. We offer a variety of training resources and support to ensure a smooth transition and successful implementation.',
     },
   ],
 ]

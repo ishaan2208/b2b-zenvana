@@ -6,11 +6,11 @@ import { type Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: {
-    template: '%s - TaxPal',
-    default: 'TaxPal - Accounting made simple for small businesses',
+    template: '%s - StaySystems',
+    default: 'StaySystems - Efficient hotel management software',
   },
   description:
-    'Most bookkeeping software is accurate, but hard to use. We make the opposite trade-off, and hope you don’t get audited.',
+    ' StaySystems is a hotel management software that helps you manage your hotel efficiently. It is a cloud-based software that helps you manage your hotel from anywhere in the world.',
 }
 
 const inter = Inter({
