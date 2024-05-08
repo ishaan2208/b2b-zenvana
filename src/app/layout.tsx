@@ -2,6 +2,7 @@ import { Inter, Lexend } from 'next/font/google'
 import clsx from 'clsx'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { Analytics } from '@vercel/analytics/react'
+import { GoogleTagManager } from '@next/third-parties/google'
 
 import '@/styles/tailwind.css'
 import { type Metadata } from 'next'
@@ -46,6 +47,7 @@ export default function RootLayout({
         {children}
       </body>
       <GoogleAnalytics gaId="AW-16548808937" />
+      <GoogleTagManager gtmId="GTM-NF3MGFXC" />
     </html>
   )
 }
