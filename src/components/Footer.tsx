@@ -43,6 +43,9 @@ export function Footer() {
             Copyright &copy; {new Date().getFullYear()} StaySytems. All rights
             reserved.
           </p>
+          <p className="mt-6 text-sm text-slate-500 sm:mt-0">
+            Phone Number: +91 9084702208
+          </p>
         </div>
       </Container>
     </footer>
