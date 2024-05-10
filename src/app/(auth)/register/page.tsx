@@ -55,14 +55,13 @@ export default function Register() {
         </Link>
       </div>
       {loading ? (
-        <h1 className=" font-bold text-red-500">
+        <h1 className=" text-lg font-bold text-red-500">
           Please do not refresh the page or go back form is getting submitted
         </h1>
       ) : (
         <>
-          {' '}
           <div className=" flex w-full flex-col items-center space-y-6">
-            <h2 className="mt-6 text-lg font-semibold text-gray-900">
+            <h2 className="mt-6 text-center text-lg font-semibold text-gray-900">
               Get started for free by filling the form or by calling us at{' '}
             </h2>
             <Button color="blue" className=" mt-4">
