@@ -129,28 +129,19 @@ export function Pricing() {
           </h2>
           <p className="mt-4 text-lg text-slate-400">
             It doesn’t matter what size your business is, our software work well
-            for you.
+            for you. You can ask for 15 day free trial by calling us on{' '}
+            <Button color="blue" className=" mt-4">
+              <a href="tel:+91 9084702208" className="text-white">
+                +91 9084702208
+              </a>
+            </Button>
           </p>
         </div>
         <div className="-mx-4 mt-16 grid max-w-2xl grid-cols-1 gap-y-10 sm:mx-auto lg:-mx-8 lg:max-w-none lg:grid-cols-3 xl:mx-0 xl:gap-x-8">
           <Plan
-            name="Starter"
-            price="200 per room for a month"
-            description="Good for anyone who wants to get started."
-            href="/register"
-            features={[
-              'Cloud based software',
-              'Can add unlimited rooms',
-              'Can add unlimited guests',
-              'Can add unlimited employees',
-              'Advance Analytics',
-              '24/7 Support',
-            ]}
-          />
-          <Plan
             featured
             name="Starter"
-            price="₹800 per Room for 6 Months"
+            price="₹599 per room for 6 Months"
             description="Good for anyone who wants to get started."
             href="/register"
             features={[
@@ -163,8 +154,23 @@ export function Pricing() {
             ]}
           />
           <Plan
+            name="Starter"
+            price="₹199 per room for a month"
+            description="Good for anyone who wants to get started."
+            href="/register"
+            features={[
+              'Cloud based software',
+              'Can add unlimited rooms',
+              'Can add unlimited guests',
+              'Can add unlimited employees',
+              'Advance Analytics',
+              '24/7 Support',
+            ]}
+          />
+
+          <Plan
             name="Enterprise"
-            price="₹1000 per room for a year"
+            price="₹999 per room for a year"
             description="Good for anyone who wants to manage multiple from single console."
             href="/register"
             features={[
