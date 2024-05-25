@@ -135,7 +135,7 @@ export function Pricing() {
         <div className="-mx-4 mt-16 grid max-w-2xl grid-cols-1 gap-y-10 sm:mx-auto lg:-mx-8 lg:max-w-none lg:grid-cols-3 xl:mx-0 xl:gap-x-8">
           <Plan
             name="Starter"
-            price="₹500/month"
+            price="200/per room per month"
             description="Good for anyone who wants to get started."
             href="/register"
             features={[
@@ -150,7 +150,7 @@ export function Pricing() {
           <Plan
             featured
             name="Starter"
-            price="₹0/month for first 6 months"
+            price="₹800/per room per 6 months"
             description="Good for anyone who wants to get started."
             href="/register"
             features={[
@@ -164,7 +164,7 @@ export function Pricing() {
           />
           <Plan
             name="Enterprise"
-            price="₹1000/month"
+            price="₹1000/per room per year"
             description="Good for anyone who wants to manage multiple from single console."
             href="/register"
             features={[
