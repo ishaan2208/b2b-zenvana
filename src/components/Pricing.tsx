@@ -1,7 +1,10 @@
+'use client'
+
 import clsx from 'clsx'
 
 import { Button } from '@/components/Button'
 import { Container } from '@/components/Container'
+import { track } from '@vercel/analytics'
 
 function SwirlyDoodle(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
@@ -98,7 +101,11 @@ function Plan({
           </li>
         ))}
       </ul>
+
       <Button
+        onClick={() => {
+          track('clicked_get_started_button_pricing')
+        }}
         href={href}
         variant={featured ? 'solid' : 'outline'}
         color="white"
