@@ -27,6 +27,7 @@ export default function Register() {
   const onSubmit = (e: any) => {
     setLoading(true)
     e.preventDefault()
+    // router.push('/thankyou')
     axios
       .post(`${process.env.NEXT_PUBLIC_API_URL}/leads`, {
         firstName: firstname,
@@ -40,7 +41,7 @@ export default function Register() {
         setLastname('')
         setPhone('')
         setEmail('')
-        router.push('/')
+        router.push('/thankyou')
       })
       .finally(() => {
         setLoading(false)
