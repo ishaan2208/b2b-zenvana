@@ -136,7 +136,7 @@ export function Pricing() {
           </h2>
           <p className="mt-4 text-lg text-slate-400">
             It doesn’t matter what size your business is, our software work well
-            for you. You can ask for 3 months free trial by calling us on{' '}
+            for you. You can ask for 15 days free trial by calling us on{' '}
           </p>
           <Button color="blue" className=" mt-4">
             <a href="tel:+91 9084702208" className="text-white">
