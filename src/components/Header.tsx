@@ -52,6 +52,10 @@ function MobileNavIcon({ open }: { open: boolean }) {
   )
 }
 
+const handleAppClick = () => {
+  window.location.href = 'https://app.staysystems.in/login' // or history.push('/login'); for internal navigation
+}
+
 function MobileNavigation() {
   return (
     <Popover>
@@ -86,6 +90,12 @@ function MobileNavigation() {
             as="div"
             className="absolute inset-x-0 top-full mt-4 flex origin-top flex-col rounded-2xl bg-white p-4 text-lg tracking-tight text-slate-900 shadow-xl ring-1 ring-slate-900/5"
           >
+            <MobileNavLink href="https://app.staysystems.in/login">
+              PMS Login
+            </MobileNavLink>
+            <MobileNavLink href="https://admin.staysystems.in/login">
+              Admin Login
+            </MobileNavLink>
             <MobileNavLink href="#features">Features</MobileNavLink>
             {/* <MobileNavLink href="#testimonials">Testimonials</MobileNavLink> */}
             <MobileNavLink href="#pricing">Pricing</MobileNavLink>
@@ -121,6 +131,12 @@ export function Header() {
               {/* <h1 className=" font-bold">StaySystems</h1> */}
             </Link>
             <div className="hidden md:flex md:gap-x-6">
+              <NavLink href="https://app.staysystems.in/login">
+                PMS Login
+              </NavLink>
+              <NavLink href="https://admin.staysystems.in/login">
+                Admin Login
+              </NavLink>
               <NavLink href="#features">Features</NavLink>
               {/* <NavLink href="#testimonials">Testimonials</NavLink> */}
               <NavLink href="#pricing">Pricing</NavLink>
