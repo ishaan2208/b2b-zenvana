@@ -1,10 +1,19 @@
+'use client'
+
 import Image from 'next/image'
 
 import { Button } from '@/components/Button'
 import { Container } from '@/components/Container'
 import backgroundImage from '@/images/background-call-to-action.jpg'
+import { track } from '@vercel/analytics'
 
 export function CallToAction() {
+  const handleSignUpClick = () => {
+    track('clicked sign up', {
+      location: 'header',
+    })
+    window.location.href = 'https://app.staysystems.in/signup' // or history.push('/signup'); for internal navigation
+  }
   return (
     <section
       id="get-started-today"
@@ -27,7 +36,7 @@ export function CallToAction() {
             It’s time to take control of your Hotel. Buy our software so you can
             feel like you’re doing something productive.
           </p>
-          <Button href="/register" color="white" className="mt-10">
+          <Button onClick={handleSignUpClick} color="white" className="mt-10">
             Get 15 days free
           </Button>
         </div>

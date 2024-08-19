@@ -9,6 +9,7 @@ import { Button } from '@/components/Button'
 import { Container } from '@/components/Container'
 import { Logo } from '@/components/Logo'
 import { NavLink } from '@/components/NavLink'
+import { track } from '@vercel/analytics'
 
 function MobileNavLink({
   href,
@@ -98,6 +99,13 @@ function MobileNavigation() {
   )
 }
 
+const handleSignUpClick = () => {
+  track('clicked sign up', {
+    location: 'header',
+  })
+  window.location.href = 'https://app.staysystems.in/signup' // or history.push('/signup'); for internal navigation
+}
+
 export function Header() {
   return (
     <header className="py-10">
@@ -123,7 +131,7 @@ export function Header() {
             {/* <div className="hidden md:block">
               <NavLink href="/login">Sign in</NavLink>
             </div> */}
-            <Button href="/register" color="blue">
+            <Button onClick={handleSignUpClick} color="blue">
               <span>
                 Get started <span className="hidden lg:inline">today</span>
               </span>

@@ -15,6 +15,12 @@ import { track } from '@vercel/analytics'
 // import logoTuple from '@/images/logos/tuple.svg'
 
 export function Hero() {
+  const handleSignUpClick = () => {
+    track('clicked sign up', {
+      location: 'header',
+    })
+    window.location.href = 'https://app.staysystems.in/signup' // or history.push('/signup'); for internal navigation
+  }
   return (
     <Container className="pb-16 pt-20 text-center lg:pt-32">
       <h1 className="mx-auto max-w-4xl font-display text-5xl font-medium tracking-tight text-slate-900 sm:text-7xl">
@@ -47,17 +53,23 @@ export function Hero() {
         </span>{' '}
         Call
       </h1>
-      <Button
-        onClick={() => {
-          track('clicked_call_button')
-        }}
-        color="blue"
-        className=" mt-4"
-      >
-        <a href="tel:+91 9084702208" className="text-white">
-          +91 9084702208
-        </a>
-      </Button>
+      <div className=" mx-auto flex w-fit flex-col items-center space-y-4 p-5">
+        <Button
+          onClick={() => {
+            track('clicked_call_button')
+          }}
+          color="blue"
+          className=""
+        >
+          <a href="tel:+91 9084702208" className="text-white">
+            +91 9084702208
+          </a>
+        </Button>
+        <span>Or</span>
+        <Button onClick={handleSignUpClick} color="blue" className=" ">
+          Sign Up to get 15 days free
+        </Button>
+      </div>
       <p className="mx-auto mt-12 max-w-5xl text-lg tracking-tight text-slate-700">
         StaySystems is designed to revolutionize property management by
         empowering your front office team with intuitive tools that simplify
@@ -73,14 +85,7 @@ export function Hero() {
         new heights.
       </p>
       <div className="mt-10 flex justify-center gap-x-6">
-        <Button
-          onClick={() => {
-            track('clicked_get_3_months_free_button')
-          }}
-          href="/register"
-        >
-          Get 3 months free{' '}
-        </Button>
+        <Button onClick={handleSignUpClick}>Get 15 Days Free </Button>
         {/* <Button
           href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
           variant="outline"
