@@ -6,9 +6,10 @@ import { Tab } from '@headlessui/react'
 import clsx from 'clsx'
 
 import { Container } from '@/components/Container'
-import screenshotContacts from '@/images/screenshots/ss11.png'
+import screenshotContacts from '@/images/screenshots/ss15.png'
 import screenshotInventory from '@/images/screenshots/ss7.png'
-import screenshotProfitLoss from '@/images/screenshots/ss8.png'
+import screenshotReport from '@/images/screenshots/ss14.png'
+import screenshotDayBook from '@/images/screenshots/ss10.png'
 
 interface Feature {
   name: React.ReactNode
@@ -23,8 +24,8 @@ const features: Array<Feature> = [
     name: 'Reporting',
     summary: 'Stay on top of things with always up-to-date reporting features.',
     description:
-      'We talked about reporting in the section above but we needed three items here, so mentioning it one more time for posterity.',
-    image: screenshotProfitLoss,
+      "Reporting is a key feature of our software. It's always up-to-date and helps you to stay on top of things.",
+    image: screenshotReport,
     icon: function ReportingIcon() {
       let id = useId()
       return (
@@ -103,6 +104,33 @@ const features: Array<Feature> = [
       )
     },
   },
+  {
+    name: 'Day Book',
+    summary: ' Track your daily cash flow',
+    description:
+      ' Ever wanted to view your daily income and expense from one point',
+    image: screenshotDayBook,
+    icon: function ContactsIcon() {
+      return (
+        <>
+          <path
+            opacity=".5"
+            d="M8 17a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2Z"
+            fill="#fff"
+          />
+          <path
+            opacity=".3"
+            d="M8 24a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2Z"
+            fill="#fff"
+          />
+          <path
+            d="M8 10a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2Z"
+            fill="#fff"
+          />
+        </>
+      )
+    },
+  },
 ]
 
 function Feature({
@@ -173,7 +201,7 @@ function FeaturesDesktop() {
     <Tab.Group as="div" className="hidden lg:mt-20 lg:block">
       {({ selectedIndex }) => (
         <>
-          <Tab.List className="grid grid-cols-3 gap-x-8">
+          <Tab.List className="grid grid-cols-4 gap-x-8">
             {features.map((feature, featureIndex) => (
               <Feature
                 key={feature.summary}
@@ -236,8 +264,8 @@ export function SecondaryFeatures() {
             Simplify everyday business tasks.
           </h2>
           <p className="mt-4 text-lg tracking-tight text-slate-700">
-            Because you’d probably be a little confused if we suggested you
-            complicate your everyday business tasks instead.
+            Running a hotel is hard work. Our software helps you simplify your
+            everyday business tasks.
           </p>
         </div>
         <FeaturesMobile />

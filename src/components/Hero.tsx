@@ -73,7 +73,8 @@ export function Hero() {
       <p className="mx-auto mt-12 max-w-5xl text-lg tracking-tight text-slate-700">
         StaySystems is designed to revolutionize property management by
         empowering your front office team with intuitive tools that simplify
-        their daily tasks.Bring big brands level tech into your hotel. Our
+        their daily tasks.Bring big brands level tech into your hotel.
+        {/* Our
         innovative software ensures a smooth operational flow, preventing
         revenue leakage and reducing the risk of theft through stringent
         security protocols. By streamlining administrative processes,
@@ -82,7 +83,7 @@ export function Hero() {
         system facilitate a more efficient work environment, but it also sets
         the stage for increased revenue generation and superior guest
         satisfaction. Choose StaySystems to elevate your property management to
-        new heights.
+        new heights. */}
       </p>
       <div className="mt-10 flex justify-center gap-x-6">
         <Button onClick={handleSignUpClick}>Get 15 Days Free </Button>
@@ -99,7 +100,7 @@ export function Hero() {
           <span className="ml-3">Watch video</span>
         </Button> */}
       </div>
-      <div className="mt-36 lg:mt-44">
+      {/* <div className="mt-36 lg:mt-44">
         <p className="font-display text-base text-slate-900">
           Trusted by these companies so far
         </p>
@@ -138,7 +139,7 @@ export function Hero() {
             </li>
           ))}
         </ul>
-      </div>
+      </div> */}
     </Container>
   )
 }

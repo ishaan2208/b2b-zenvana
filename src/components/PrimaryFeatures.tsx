@@ -9,8 +9,8 @@ import { Container } from '@/components/Container'
 import backgroundImage from '@/images/background-features.jpg'
 import screenshotExpenses from '@/images/screenshots/ss10.png'
 import screenshotPayroll from '@/images/screenshots/ss7.png'
-import screenshotReporting from '@/images/screenshots/reporting.png'
-import screenshotVatReturns from '@/images/screenshots/ss9.png'
+import screenshotCalendar from '@/images/screenshots/ss12.png'
+import screenshotBooking from '@/images/screenshots/ss13.png'
 
 const features = [
   {
@@ -22,14 +22,19 @@ const features = [
   {
     title: 'Revenue Optimization',
     description:
-      'Unlock the full potential of your property with our dynamic revenue management tools. StaySystems analyzes real-time data to help you optimize pricing strategies and maximize occupancy rates',
+      'Unlock the full potential of your property with our dynamic revenue management tools. ',
     image: screenshotExpenses,
   },
   {
-    title: 'Superior Guest Experience',
+    title: 'Efficient Inventory Management ',
     description:
-      "Elevate your guests' experience with features designed for personalized service. From the initial booking to post-stay follow-ups, StaySystems enables you to engage guests with tailored communications and services, leading to higher satisfaction and repeat business.",
-    image: screenshotVatReturns,
+      'StaySystems helps you manage your inventory efficiently. Overbookings are a thing of the past.',
+    image: screenshotCalendar,
+  },
+  {
+    title: 'Superior Guest Experience',
+    description: 'Complete Information about your guests at your fingertips.',
+    image: screenshotBooking,
   },
   // {
   //   title: 'Reporting',
@@ -133,7 +138,7 @@ export function PrimaryFeatures() {
                 {features.map((feature) => (
                   <Tab.Panel key={feature.title} unmount={false}>
                     <div className="relative sm:px-6 lg:hidden">
-                      <div className="absolute -inset-x-4 bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl" />
+                      <div className="absolute -inset-x-4 bottom-[-4.25rem] top-[-6.5rem] ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl xl:bg-white/10 xl:ring-1" />
                       <p className="relative mx-auto max-w-2xl text-base text-white sm:text-center">
                         {feature.description}
                       </p>
