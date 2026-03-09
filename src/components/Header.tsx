@@ -32,19 +32,17 @@ export function Header() {
       className={clsx(
         'sticky top-0 z-50 transition duration-300',
         scrolled
-          ? 'border-b border-border/60 bg-background/82 backdrop-blur-xl'
+          ? 'border-b border-border bg-background'
           : 'bg-transparent',
       )}
     >
       <div className="container-shell">
         <div className="flex h-[76px] items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3" aria-label="Zenvana home">
+          <Link href="/" className="flex items-center h-full gap-3" aria-label="Zenvana home">
             <Logo className="h-10 w-auto sm:h-12" />
-            <div className="hidden sm:block">
-              <div className="eyebrow">Zenvana Hotels</div>
-              <div className="mt-1 text-sm text-foreground/80">
-                Dehradun stays, book direct
-              </div>
+            <div className="">
+              <div className="eyebrow pb-1">Zenvana Hotels</div>
+
             </div>
           </Link>
 
