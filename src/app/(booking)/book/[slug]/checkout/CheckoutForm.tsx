@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 
 import { Button } from '@/components/Button'
+import { PriceWithTax } from '@/components/PriceWithTax'
 import { createPublicBooking } from '@/lib/api'
 
 type Props = {
@@ -264,7 +265,11 @@ export default function CheckoutForm({
                 checked={paymentMode === 'pay_now'}
                 onSelect={() => setPaymentMode('pay_now')}
                 title="Pay now"
-                description={`Complete payment online for ₹${Number(totalAmount).toLocaleString('en-IN')}.`}
+                description={
+                  <>
+                    Complete payment online for <PriceWithTax amount={Number(totalAmount)} size="sm" showTaxBreakup={false} />.
+                  </>
+                }
                 icon={<CreditCard className="h-5 w-5" />}
               />
             </div>
@@ -374,7 +379,7 @@ function PaymentOptionCard({
   checked: boolean
   onSelect: () => void
   title: string
-  description: string
+  description: React.ReactNode
   icon: React.ReactNode
 }) {
   return (

@@ -12,6 +12,7 @@ import {
 
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/Button'
+import { PriceWithTax } from '@/components/PriceWithTax'
 import type { PublicRatesWithPlansPlan } from '@/lib/api'
 
 type Props = {
@@ -132,7 +133,7 @@ export function RatePlanSelector({
                         </h3>
 
                         <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                          ₹{plan.averagePricePerNight.toLocaleString('en-IN')}/night average
+                          <PriceWithTax amount={plan.averagePricePerNight} suffix="/night average" size="sm" />
                         </p>
                       </div>
 
@@ -141,7 +142,7 @@ export function RatePlanSelector({
                           Total
                         </div>
                         <div className="mt-1 text-lg font-semibold text-foreground">
-                          ₹{plan.totalAmount.toLocaleString('en-IN')}
+                          <PriceWithTax amount={plan.totalAmount} size="lg" />
                         </div>
                       </div>
                     </div>
@@ -187,9 +188,9 @@ export function RatePlanSelector({
                         {selectedPlan.label}
                       </p>
                       <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                        ₹{selectedPlan.averagePricePerNight.toLocaleString('en-IN')}/night ·{' '}
-                        {nights} night{nights !== '1' ? 's' : ''} · ₹
-                        {selectedPlan.totalAmount.toLocaleString('en-IN')} per room
+                        <PriceWithTax amount={selectedPlan.averagePricePerNight} suffix="/night" size="sm" /> ·{' '}
+                        {nights} night{nights !== '1' ? 's' : ''} ·{' '}
+                        <PriceWithTax amount={selectedPlan.totalAmount} suffix=" per room" size="sm" />
                       </p>
                     </div>
                   </div>
@@ -240,7 +241,7 @@ export function RatePlanSelector({
                 </div>
 
                 <div className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
-                  ₹{totalAmount.toLocaleString('en-IN')}
+                  <PriceWithTax amount={totalAmount} size="2xl" />
                 </div>
 
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">

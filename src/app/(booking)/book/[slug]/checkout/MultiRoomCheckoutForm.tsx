@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 
 import { Button } from '@/components/Button'
+import { PriceWithTax } from '@/components/PriceWithTax'
 import { createPublicBookingWithRoomLines } from '@/lib/api'
 
 const MULTI_ROOM_STORAGE_KEY = 'zenvana_multi_room_booking'
@@ -165,7 +166,7 @@ export default function MultiRoomCheckoutForm({
             <SummaryCard
               icon={<ShieldCheck className="h-4.5 w-4.5" />}
               label="Total"
-              value={`₹${Number(totalAmount).toLocaleString('en-IN')}`}
+              value={<PriceWithTax amount={Number(totalAmount)} size="default" showTaxBreakup={false} />}
             />
           </div>
 
@@ -297,7 +298,7 @@ function SummaryCard({
 }: {
   icon: React.ReactNode
   label: string
-  value: string
+  value: React.ReactNode
 }) {
   return (
     <div className="rounded-[1.35rem] border border-border/60 bg-background/55 p-4 dark:bg-background/35">

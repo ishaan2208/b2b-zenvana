@@ -9,6 +9,7 @@ import {
 
 import { Container } from '@/components/Container'
 import { Button } from '@/components/Button'
+import { PriceWithTax } from '@/components/PriceWithTax'
 
 export const metadata = {
   title: 'Booking confirmation',
@@ -102,7 +103,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
                     <SummaryCard
                       icon={<Receipt className="h-4.5 w-4.5" />}
                       label="Total"
-                      value={`₹${Number(q.totalAmount).toLocaleString('en-IN')}`}
+                      value={<PriceWithTax amount={Number(q.totalAmount)} size="default" />}
                     />
                   </div>
 
@@ -174,7 +175,7 @@ function SummaryCard({
 }: {
   icon: React.ReactNode
   label: string
-  value: string
+  value: React.ReactNode
 }) {
   return (
     <div className="rounded-[1.35rem] border border-border/60 bg-background/55 p-4 dark:bg-background/35">

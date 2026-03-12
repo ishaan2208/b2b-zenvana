@@ -15,6 +15,7 @@ import {
 
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/Button'
+import { PriceWithTax } from '@/components/PriceWithTax'
 import type { PublicRatesWithPlansPlan } from '@/lib/api'
 import type { ShareCombination } from './shareCombinations'
 
@@ -461,9 +462,7 @@ export function RoomCard({
                                               {plan.label}
                                             </p>
                                             <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                                              ₹{plan.averagePricePerNight.toLocaleString('en-IN')}
-                                              /night · {nightsOcc} night
-                                              {nightsOcc !== 1 ? 's' : ''}
+                                              <PriceWithTax amount={plan.averagePricePerNight} suffix={`/night · ${nightsOcc} night${nightsOcc !== 1 ? 's' : ''}`} size="sm" />
                                             </p>
                                           </div>
 
@@ -479,7 +478,7 @@ export function RoomCard({
                                             Per room
                                           </span>
                                           <span className="text-lg font-semibold text-foreground">
-                                            ₹{plan.totalAmount.toLocaleString('en-IN')}
+                                            <PriceWithTax amount={plan.totalAmount} size="lg" />
                                           </span>
                                         </div>
                                       </button>
@@ -502,14 +501,14 @@ export function RoomCard({
                               Total
                             </div>
                             <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-                              ₹
-                              {occupanciesInCombination
-                                .reduce((sum, occ) => {
+                              <PriceWithTax
+                                amount={occupanciesInCombination.reduce((sum, occ) => {
                                   const plan = selectedPlanByOcc[occ]
                                   const numRooms = selectedCombination!.breakdown[occ]
                                   return sum + (plan ? plan.totalAmount * numRooms : 0)
-                                }, 0)
-                                .toLocaleString('en-IN')}
+                                }, 0)}
+                                size="2xl"
+                              />
                             </p>
                           </div>
 
@@ -627,9 +626,9 @@ export function RoomCard({
                           </p>
 
                           <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                            ₹{plan.averagePricePerNight.toLocaleString('en-IN')}/night ·{' '}
-                            {nightsForPlans} night{nightsForPlans !== 1 ? 's' : ''} · ₹
-                            {plan.totalAmount.toLocaleString('en-IN')} per room
+                            <PriceWithTax amount={plan.averagePricePerNight} suffix="/night" size="sm" /> ·{' '}
+                            {nightsForPlans} night{nightsForPlans !== 1 ? 's' : ''} ·{' '}
+                            <PriceWithTax amount={plan.totalAmount} suffix=" per room" size="sm" />
                           </p>
                         </div>
 
@@ -638,7 +637,7 @@ export function RoomCard({
                             Selected total
                           </div>
                           <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-                            ₹{totalForSelection.toLocaleString('en-IN')}
+                            <PriceWithTax amount={totalForSelection} size="2xl" />
                           </div>
                         </div>
                       </div>

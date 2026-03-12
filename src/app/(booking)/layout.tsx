@@ -9,7 +9,7 @@ export default function BookingLayout({
     <div className="flex min-h-dvh flex-col bg-background text-foreground">
       <Header />
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">{children}</div>
+        <div className=" w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">{children}</div>
       </main>
     </div>
   )

@@ -13,6 +13,7 @@ import {
 
 import { getPublicPropertyBySlug } from '@/lib/api'
 import { Container } from '@/components/Container'
+import { PriceWithTax } from '@/components/PriceWithTax'
 import CheckoutForm from './CheckoutForm'
 import MultiRoomCheckoutForm from './MultiRoomCheckoutForm'
 import { BackToRoomsLink } from './BackToRoomsLink'
@@ -204,7 +205,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
                 />
                 <SummaryChip
                   icon={<Receipt className="h-4 w-4" />}
-                  text={`₹${Number(totalAmount).toLocaleString('en-IN')}`}
+                  text={<PriceWithTax amount={Number(totalAmount)} size="sm" inline showTaxBreakup={false} />}
                 />
                 {occupancy != null && (
                   <SummaryChip
@@ -250,8 +251,8 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
                   <span className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                     Total
                   </span>
-                  <span className="text-xl font-semibold tracking-tight text-foreground">
-                    ₹{Number(totalAmount).toLocaleString('en-IN')}
+                  <span className="text-lg font-semibold tracking-tight text-foreground">
+                    <PriceWithTax amount={Number(totalAmount)} size="lg" showTaxBreakup={false} />
                   </span>
                 </div>
               </div>
@@ -335,8 +336,8 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
                 <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                   Total
                 </div>
-                <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-                  ₹{Number(totalAmount).toLocaleString('en-IN')}
+                <div className="mt-2 text-xl font-semibold tracking-tight text-foreground">
+                  <PriceWithTax amount={Number(totalAmount)} size="xl" showTaxBreakup={false} />
                 </div>
               </div>
 
@@ -378,7 +379,7 @@ function SummaryChip({
   text,
 }: {
   icon: React.ReactNode
-  text: string
+  text: React.ReactNode
 }) {
   return (
     <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/70 px-4 py-2 text-sm text-muted-foreground dark:bg-card/50">
