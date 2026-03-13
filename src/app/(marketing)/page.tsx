@@ -163,8 +163,11 @@ function RoomsSection() {
               Discover Rooms That Redefine Comfort in Dehradun.
             </h2>
             <p className="body-copy mt-5 max-w-xl">
-              Explore a small collection of room types designed around rest, calm lighting, and
-              practical space.
+              Enjoy a relaxing stay with comfortable rooms, modern amenities, and warm hospitality.
+              Designed for both leisure and business travelers, our rooms offer the comfort and
+              convenience you expect from the <strong>best hotel in Dehradun</strong>. Experience a
+              peaceful stay where every detail is crafted for your comfort at the{' '}
+              <strong>best hotel in Dehradun</strong>.
             </p>
           </div>
 
