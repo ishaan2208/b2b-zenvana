@@ -11,10 +11,12 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 
 const nav = [
   { href: '/hotels', label: 'Hotels' },
+  { href: '/restaurant', label: 'Restaurant' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/contact', label: 'Contact' },
+  { href: '/about', label: 'About' },
   { href: '/destinations', label: 'Destinations' },
   { href: '/offers', label: 'Offers' },
-  { href: '/experiences', label: 'Experiences' },
-  { href: '/about', label: 'About' },
 ]
 
 export function Header() {
@@ -39,7 +41,7 @@ export function Header() {
       <div className="container-shell">
         <div className="flex h-[76px] items-center justify-between gap-4">
           <Link href="/" className="flex items-center h-full gap-3" aria-label="Zenvana home">
-            <Logo className="h-10 w-auto sm:h-12" />
+            <Logo className="h-14 w-auto sm:h-16" />
             <div className="">
               <div className="eyebrow pb-1">Zenvana Hotels</div>
 

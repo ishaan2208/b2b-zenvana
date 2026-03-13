@@ -14,12 +14,11 @@ export function Logo({
       <Image
         src="/Zenvana%20logo/zenvana_exact_match.svg"
         alt="Zenvana"
-        width={120}
-        height={48}
-        className="h-10 w-auto object-contain sm:h-12"
+        width={140}
+        height={60}
+        className="h-16 w-auto object-contain sm:h-18 rounded-full border-none background-transparenbut keep "
         priority
       />
-
     </div>
-  )
+  );
 }
