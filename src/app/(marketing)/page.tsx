@@ -29,6 +29,7 @@ export default async function HomePage() {
   return (
     <>
       <HeroSection properties={heroProperties} />
+      <IntroTextSection />
       <RoomsSection />
       <SpecialOffersSection />
       <DiningSection />
@@ -38,6 +39,50 @@ export default async function HomePage() {
       <LocationSection />
       <BookingCtaSection />
     </>
+  )
+}
+
+function IntroTextSection() {
+  return (
+    <section className="section-rule bg-background">
+      <div className="container-shell py-10 sm:py-14 lg:py-16">
+        <div className="mx-auto max-w-4xl text-center text-foreground">
+          <h1 className="font-serif text-2xl font-semibold tracking-[-0.03em] sm:text-3xl lg:text-4xl">
+            Best Hotel in Dehradun | Zenvana Hotels Rajpur Road Dehradun
+          </h1>
+          <h3 className="mt-2 font-serif text-xl tracking-[-0.02em] text-muted-foreground sm:text-2xl">
+            A Serene Luxury Hotel near Rajpur Road, Dehradun
+          </h3>
+          <div className="mt-3 mx-auto h-px w-16 bg-muted-foreground/40" />
+          <div className="mt-6 space-y-4 text-sm leading-7 text-muted-foreground sm:text-base">
+            <p>
+              In{' '}
+              <a
+                href="https://en.wikipedia.org/wiki/Dehradun"
+                target="_blank"
+                rel="noreferrer"
+                className="underline-offset-4 hover:underline"
+              >
+                Dehradun
+              </a>
+              , mornings start slow with fresh air, soft light, and the hills in the distance. At
+              Zenvana Hotels, we try to keep that same calm feeling inside the hotel, so your stay
+              feels simple, relaxed, and easy.
+            </p>
+            <p>
+              We sit between the energy of Rajpur Road and the quiet of the Mussoorie foothills,
+              giving you the best of both worlds. Step out for cafés, shopping, and city life, then
+              come back to warm service, clean rooms, and a peaceful place to unwind.
+            </p>
+            <p>
+              Whether you&apos;re here for a corporate event, a short staycation, or a longer
+              getaway, every moment at our Dehradun hotel is shaped to feel unhurried, attentive,
+              and quietly luxurious.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -62,14 +107,14 @@ function HeroSection({
         </div>
       </div>
 
-      <div className="container-shell relative flex min-h-[92svh] flex-col justify-between pb-10 pt-32 sm:pb-12 lg:pb-24">
-          <div className="relative z-10 max-w-5xl pl-0 md:pl-[6%] lg:pl-[8%] text-white">
+      <div className="container-shell relative flex min-h-[92svh] flex-col items-center justify-center pb-10 pt-32 sm:pb-12 lg:pb-24">
+          <div className="relative z-10 max-w-4xl mx-auto text-center text-white">
           <div className="relative space-y-5 sm:space-y-6 lg:space-y-7">
             <h1 className="max-w-3xl font-serif text-3xl font-semibold leading-tight tracking-[-0.05em] sm:text-4xl lg:text-5xl">
               Discover the Best Hotels in Dehradun with Zenvana
             </h1>
 
-            <p className="max-w-xl text-sm leading-7 text-white/85 sm:text-base lg:text-lg">
+            <p className="max-w-xl mx-auto text-sm leading-7 text-white/85 sm:text-base lg:text-lg">
               Zenvana brings together Dehradun-rooted stays shaped by Rajpur Road,
               foothill calm, family comfort, and direct-booking ease.
             </p>
@@ -111,15 +156,24 @@ function RoomsSection() {
   return (
     <section className="section-rule">
       <div className="container-shell py-14 sm:py-16 lg:py-20">
-        <div className="max-w-2xl">
-          <div className="eyebrow">Accommodation</div>
-          <h2 className="display-title mt-4 text-3xl sm:text-4xl lg:text-5xl">
-            Rooms shaped for comfort, not clutter.
-          </h2>
-          <p className="body-copy mt-5 max-w-xl">
-            Explore a small collection of room types designed around rest, calm lighting, and
-            practical space.
-          </p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="max-w-2xl">
+            <div className="eyebrow">Accommodation</div>
+            <h2 className="display-title mt-4 text-3xl sm:text-4xl lg:text-5xl">
+              Discover Rooms That Redefine Comfort in Dehradun.
+            </h2>
+            <p className="body-copy mt-5 max-w-xl">
+              Explore a small collection of room types designed around rest, calm lighting, and
+              practical space.
+            </p>
+          </div>
+
+          <Link
+            href="/hotels"
+            className="site-button-light w-fit md:mt-[68px]"
+          >
+            Explore more
+          </Link>
         </div>
 
         <RoomsCarousel rooms={rooms} autoplayMs={4500} />
