@@ -19,7 +19,27 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
+import {
+  MAX_GUESTS_PER_ROOM,
+  ROOMS_FOR_GUESTS_PER_ROOM_MODE,
+  getMaxTotalGuests,
+  clampGuestsPerRoom,
+  clampTotalGuests,
+} from '@/lib/booking-constants'
 import { cn } from '@/lib/utils'
+
+const calendarClassNames = {
+  months: 'flex flex-col gap-4',
+  month: 'flex flex-col gap-4',
+  caption: 'flex justify-center pt-1',
+  nav: 'flex gap-1',
+  table: 'w-full border-collapse',
+  head_row: 'flex',
+  head_cell: 'rounded-md w-9 font-normal text-[0.8rem] text-muted-foreground',
+  row: 'flex w-full mt-2',
+  cell: 'relative p-0 text-center text-sm focus-within:relative',
+  day: 'h-9 w-9 p-0 font-normal hover:bg-accent hover:text-accent-foreground rounded-md',
+}
 
 function formatDate(d: Date): string {
   return d.toLocaleDateString('en-US', {
@@ -60,9 +80,6 @@ export function HeroBookBar({ properties }: HeroBookBarProps) {
     return d
   }, [today])
 
-  const MAX_GUESTS_PER_ROOM = 3
-  const ROOMS_FOR_GUESTS_PER_ROOM_MODE = 6 // When rooms >= this, show "guests per room" instead of "total guests"
-
   const [slug, setSlug] = useState('')
   const [checkIn, setCheckIn] = useState<Date | undefined>(today)
   const [checkOut, setCheckOut] = useState<Date | undefined>(tomorrow)
@@ -79,21 +96,16 @@ export function HeroBookBar({ properties }: HeroBookBarProps) {
   // When switching between total-guests and guests-per-room modes, convert the value
   useEffect(() => {
     if (useGuestsPerRoomMode && !prevModeRef.current) {
-      // Switching to per-room: guests still holds old total, convert to per-room (e.g. 12 total in 6 rooms → 2 per room)
-      const oldTotal = guestsNum
-      const perRoom = Math.min(MAX_GUESTS_PER_ROOM, Math.max(1, Math.floor(oldTotal / roomsNum)))
+      const perRoom = clampGuestsPerRoom(Math.floor(guestsNum / roomsNum))
       setGuests(String(perRoom))
     } else if (!useGuestsPerRoomMode && prevModeRef.current) {
-      // Switching to total: preserve total guests (prevRooms * perRoom) and clamp to max
-      const total = prevRoomsRef.current * guestsNum
-      const maxTotal = roomsNum * MAX_GUESTS_PER_ROOM
-      setGuests(String(Math.min(maxTotal, Math.max(1, total))))
+      setGuests(String(clampTotalGuests(roomsNum, prevRoomsRef.current * guestsNum)))
     } else if (!useGuestsPerRoomMode) {
-      const maxTotal = roomsNum * MAX_GUESTS_PER_ROOM
-      if (guestsNum > maxTotal) setGuests(String(maxTotal))
-      if (guestsNum < 1) setGuests('1')
+      if (guestsNum > getMaxTotalGuests(roomsNum) || guestsNum < 1) {
+        setGuests(String(clampTotalGuests(roomsNum, guestsNum)))
+      }
     } else if (guestsNum < 1 || guestsNum > MAX_GUESTS_PER_ROOM) {
-      setGuests(String(Math.min(MAX_GUESTS_PER_ROOM, Math.max(1, guestsNum))))
+      setGuests(String(clampGuestsPerRoom(guestsNum)))
     }
     prevModeRef.current = useGuestsPerRoomMode
     prevRoomsRef.current = roomsNum
@@ -176,6 +188,7 @@ export function HeroBookBar({ properties }: HeroBookBarProps) {
                   }
                 }}
                 disabled={(date) => startOfDay(date) < startOfDay(checkInMin)}
+                classNames={calendarClassNames}
               />
             </PopoverContent>
           </Popover>
@@ -199,6 +212,7 @@ export function HeroBookBar({ properties }: HeroBookBarProps) {
                 selected={checkOut}
                 onSelect={setCheckOut}
                 disabled={(date) => startOfDay(date) < startOfDay(checkOutMin)}
+                classNames={calendarClassNames}
               />
             </PopoverContent>
           </Popover>

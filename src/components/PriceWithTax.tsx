@@ -62,7 +62,8 @@ export function PriceWithTax({
       </span>
       <span className={cn(taxSizeClasses, 'ml-1 font-normal text-muted-foreground')} aria-hidden>
         + {currency}
-        {taxStr}
+        {taxStr}{' '}
+        <span className="text-[0.75em]">(GST)</span>
       </span>
       {suffix && (
         <span className={cn(sizeClasses, 'text-muted-foreground')}>{suffix}</span>

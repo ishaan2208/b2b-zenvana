@@ -10,6 +10,14 @@ To get started with this template, first install the npm dependencies:
 npm install
 ```
 
+Create a `.env.local` file (or copy from `.env.example`) with:
+
+```bash
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
+NEXT_PUBLIC_SITE_URL=http://localhost:3009
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_browser_api_key
+```
+
 Next, run the development server:
 
 ```bash

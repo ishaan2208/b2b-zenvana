@@ -8,7 +8,7 @@ export function Logo({
 }: React.ComponentPropsWithoutRef<'div'> & { showText?: boolean }) {
   return (
     <div
-      className={clsx('flex h-16 items-center gap-2 sm:h-[4.5rem]', className)}
+      className={clsx('flex h-16 items-center gap-2 overflow-hidden sm:h-[4.5rem]', className)}
       {...props}
     >
       <Image
@@ -16,7 +16,7 @@ export function Logo({
         alt="Zenvana"
         width={140}
         height={60}
-        className="h-full w-auto object-contain"
+        className="block h-full w-auto object-contain border-0 outline-none dark:[clip-path:inset(1px_0_0_1px)]"
         priority
       />
     </div>

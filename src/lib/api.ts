@@ -304,6 +304,7 @@ export async function createPublicBooking(
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(payload),
     }
   )
@@ -330,6 +331,7 @@ export async function createPublicBookingWithRoomLines(
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(payload),
     }
   )
@@ -388,6 +390,7 @@ export async function verifyRazorpayAndCreateBooking(
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({
         razorpay_order_id,
         razorpay_payment_id,
@@ -399,4 +402,51 @@ export async function verifyRazorpayAndCreateBooking(
   const json = await res.json()
   if (!res.ok) throw new Error(json?.error ?? 'Payment verification or booking failed')
   return json?.data
+}
+
+export async function sendPublicBookingOtp(
+  slug: string,
+  phone: string
+): Promise<{ expiresAt: string; maskedPhone?: string }> {
+  const res = await fetch(
+    `${BACKEND_URL}/public/properties/${encodeURIComponent(slug)}/booking/otp/send`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ phone }),
+    }
+  )
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(json?.message ?? json?.error ?? 'Failed to send OTP')
+  }
+  return {
+    expiresAt: json?.expiresAt,
+    maskedPhone: json?.maskedPhone,
+  }
+}
+
+export async function verifyPublicBookingOtp(
+  slug: string,
+  phone: string,
+  otp: string
+): Promise<{ verifiedAt: string }> {
+  const res = await fetch(
+    `${BACKEND_URL}/public/properties/${encodeURIComponent(slug)}/booking/otp/verify`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ phone, otp }),
+    }
+  )
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    if (json?.error === 'INVALID_OTP' && typeof json?.attemptsRemaining === 'number') {
+      throw new Error(`Invalid OTP. ${json.attemptsRemaining} attempts remaining.`)
+    }
+    throw new Error(json?.message ?? json?.error ?? 'OTP verification failed')
+  }
+  return { verifiedAt: json?.verifiedAt }
 }

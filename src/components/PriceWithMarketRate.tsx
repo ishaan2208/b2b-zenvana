@@ -84,9 +84,10 @@ export function PriceWithMarketRate({
         {currency}
         {baseStr}
       </span>
-      <span className={cn(taxSizeClasses, 'ml-1 font-normal text-muted-foreground')}>
+      <span className={cn(taxSizeClasses, 'ml-1  text-sm text-[0.75em] font-normal text-muted-foreground')}>
         + {currency}
-        {taxStr}
+        {taxStr}{' '}
+        <span className=" text-xs font-light text-muted-foreground">(GST)</span>
       </span>
     </>
   ) : (

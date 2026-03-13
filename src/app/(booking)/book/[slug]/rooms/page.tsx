@@ -1,27 +1,26 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
-  CalendarRange,
-  BedDouble,
+  ArrowLeft,
   MapPin,
   Sparkles,
-  Users,
-  ArrowLeft,
-  ShieldCheck,
 } from 'lucide-react'
 
 import {
-  getPublicPropertyBySlug,
   getPublicAvailability,
+  getPublicPropertyBySlug,
   getPublicRatesBulk,
   getPublicRatesWithPlans,
 } from '@/lib/api'
 import type { PublicRatesWithPlansPlan } from '@/lib/api'
-import { formatPrice } from '@/lib/price'
 import { Button } from '@/components/Button'
 import { Container } from '@/components/Container'
 import { RoomCard } from './RoomCard'
-import { getShareCombinations, filterPreferNoTriple } from './shareCombinations'
+import {
+  filterPreferDoubleSharing,
+  filterPreferNoTriple,
+  getShareCombinations,
+} from './shareCombinations'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -62,95 +61,57 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
     getPublicRatesBulk(slug, checkIn, checkOut, occupancy),
   ])
 
-  // Debug: fetched availability and rates bulk
-  console.log('[zenvana/rooms] fetched', {
-    slug,
-    checkIn,
-    checkOut,
-    occupancy,
-    availability: availability
-      ? {
-          checkIn: availability.checkIn,
-          checkOut: availability.checkOut,
-          nights: availability.nights,
-          roomTypes: availability.roomTypes?.map((r) => ({
-            roomTypeId: r.roomTypeId,
-            name: r.name,
-            availableRooms: r.availableRooms,
-            nights: r.nights,
-          })),
-        }
-      : null,
-    ratesBulk: ratesBulk
-      ? {
-          checkIn: ratesBulk.checkIn,
-          checkOut: ratesBulk.checkOut,
-          nights: ratesBulk.nights,
-          roomTypesCount: ratesBulk.roomTypes?.length ?? 0,
-          roomTypes: ratesBulk.roomTypes?.map((r) => ({
-            roomTypeId: r.roomTypeId,
-            roomTypeName: r.roomTypeName,
-            totalAmount: r.totalAmount,
-          })),
-        }
-      : null,
-  })
-
   if (!property) notFound()
 
   if (!availability) {
     return (
-      <main className="bg-background text-foreground">
-        <section className="relative overflow-hidden border-b border-border/60 bg-background">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(219,230,76,0.08),transparent_24%),radial-gradient(circle_at_80%_10%,rgba(116,195,101,0.06),transparent_22%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(219,230,76,0.05),transparent_24%),radial-gradient(circle_at_80%_10%,rgba(116,195,101,0.05),transparent_22%)] rounded-2xl" />
-          <Container className="rounded-2xl relative py-6 sm:py-10 lg:py-20">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/70 px-3 py-1.5 text-[10px] uppercase tracking-[0.28em] text-muted-foreground backdrop-blur-sm">
-                <Sparkles className="h-3.5 w-3.5" />
-                Room selection
+      <main className="min-h-screen bg-background text-foreground">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(120,119,198,0.10),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(56,189,248,0.08),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.08),transparent_28%)]" />
+        <Container className="relative py-6 sm:py-8 lg:py-12">
+          <Link
+            href={`/book/${slug}`}
+            className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-4 py-2 text-sm font-medium text-foreground/80 backdrop-blur-xl transition hover:text-foreground dark:bg-background/40"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to stay details
+          </Link>
+
+          <section className="mt-5 overflow-hidden rounded-[2rem] border border-border/60 bg-background/55 shadow-[0_24px_70px_rgba(8,17,31,0.08)] backdrop-blur-2xl dark:bg-background/30">
+            <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_340px]">
+              <div className="p-5 sm:p-6 lg:p-8">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-[10px] uppercase tracking-[0.26em] text-muted-foreground dark:bg-background/40">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Room selection
+                </div>
+
+                <h1 className="mt-4 font-serif text-[clamp(2rem,5vw,4rem)] leading-[0.95] tracking-[-0.05em] text-foreground">
+                  We couldn’t load rooms for these dates.
+                </h1>
+
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+                  Live availability was not returned for your selected stay. Change the dates and try again.
+                </p>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Button href={`/book/${slug}`} variant="outline" color="slate" className="dark:text-white">
+                    Change dates
+                  </Button>
+
+                  <Link
+                    href={`/hotels/${slug}`}
+                    className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-4 py-2 text-sm font-medium text-foreground/80 backdrop-blur-xl transition hover:text-foreground dark:bg-background/40"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to property
+                  </Link>
+                </div>
               </div>
 
-              <h1 className="mt-5 font-serif text-4xl leading-[0.95] tracking-[-0.05em] text-foreground sm:text-5xl lg:text-6xl">
-                We couldn’t load rooms for these dates.
-              </h1>
-
-              <p className="mt-5 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
-                Please check your stay dates and try again.
-              </p>
-            </div>
-          </Container>
-        </section>
-
-        <Container className="py-10 sm:py-12 lg:py-16">
-          <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="rounded-[2rem] border border-border/60 bg-card/70 p-6 shadow-[0_18px_45px_rgba(8,17,31,0.04)] dark:bg-card/50 sm:p-7">
-              <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                Availability unavailable
-              </div>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
-                We were not able to load live room availability for your selected dates.
-              </p>
-
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button href={`/book/${slug}`} variant="outline" color="slate" className=' dark:text-white'>
-                  Change dates
-                </Button>
-
-                <Link
-                  href={`/hotels/${slug}`}
-                  className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to property
-                </Link>
-              </div>
-            </div>
-
-            <aside className="hidden min-w-0 xl:block">
-              <div className="rounded-[1.8rem] border border-border/60 bg-card/70 p-5 text-card-foreground shadow-[0_14px_35px_rgba(8,17,31,0.04)] dark:bg-card/50 xl:sticky xl:top-8">
+              <div className="border-t border-border/60 p-5 sm:p-6 lg:border-l lg:border-t-0 lg:p-8">
                 <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
                   Stay summary
                 </div>
+
                 <h2 className="mt-3 font-serif text-2xl tracking-[-0.04em] text-foreground">
                   {property.publicName}
                 </h2>
@@ -161,9 +122,25 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
                     <span>{[property.city, property.state].filter(Boolean).join(', ')}</span>
                   </div>
                 )}
+
+                <div className="mt-5 space-y-3 border-t border-border/60 pt-5">
+                  <SummaryRow label="Check-in" value={checkIn} />
+                  <SummaryRow label="Check-out" value={checkOut} />
+                  <SummaryRow label="Rooms requested" value={`${rooms} room${rooms !== 1 ? 's' : ''}`} />
+                  {occupancy != null && (
+                    <SummaryRow
+                      label="Guests"
+                      value={
+                        guestsPerRoom != null && rooms >= 6
+                          ? `${guestsPerRoom} / room (${occupancy} total)`
+                          : `${occupancy} guest${occupancy !== 1 ? 's' : ''}`
+                      }
+                    />
+                  )}
+                </div>
               </div>
-            </aside>
-          </div>
+            </div>
+          </section>
         </Container>
       </main>
     )
@@ -176,7 +153,7 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
 
   const isMultiRoomWithGuests = rooms > 1 && occupancy != null
   const shareCombinations = isMultiRoomWithGuests
-    ? filterPreferNoTriple(getShareCombinations(rooms, occupancy!))
+    ? filterPreferDoubleSharing(filterPreferNoTriple(getShareCombinations(rooms, occupancy!)))
     : []
 
   const plansPerType = await Promise.all(
@@ -197,36 +174,17 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
     )
   )
 
-  // Debug: fetched rates/plans per room type
-  console.log('[zenvana/rooms] plansPerType', {
-    slug,
-    isMultiRoomWithGuests,
-    occupancy,
-    perRoomType: availability.roomTypes.map((av, i) => {
-      const data = plansPerType[i]
-      const isArray = Array.isArray(data)
-      return {
-        roomTypeId: av.roomTypeId,
-        roomTypeName: av.name,
-        isMulti: isMultiRoomWithGuests,
-        plansData: isArray
-          ? (data as Awaited<ReturnType<typeof getPublicRatesWithPlans>>[]).map((d, occ) => ({
-              occupancy: occ + 1,
-              plansCount: d?.plans?.length ?? 0,
-              noRatePlanForOccupancy: d?.noRatePlanForOccupancy,
-              nights: d?.nights,
-            }))
-          : {
-              plansCount: (data as Awaited<ReturnType<typeof getPublicRatesWithPlans>>)?.plans?.length ?? 0,
-              noRatePlanForOccupancy: (data as Awaited<ReturnType<typeof getPublicRatesWithPlans>>)?.noRatePlanForOccupancy,
-              nights: (data as Awaited<ReturnType<typeof getPublicRatesWithPlans>>)?.nights,
-            },
-      }
-    }),
-  })
+  const propertyRoomTypeById = new Map(
+    property.roomTypes.map((roomType) => [String(roomType.id), roomType] as const)
+  )
+  const propertyRoomTypeByName = new Map(
+    property.roomTypes.map((roomType) => [roomType.name.trim().toLowerCase(), roomType] as const)
+  )
 
   const roomTypesWithRates = availability.roomTypes.map((av, i) => {
-    const rt = property.roomTypes.find((r) => r.id === av.roomTypeId)
+    const rt =
+      propertyRoomTypeById.get(String(av.roomTypeId)) ??
+      propertyRoomTypeByName.get(av.name.trim().toLowerCase())
     const rate = ratesByRoomTypeId.get(av.roomTypeId)
     const plansData = plansPerType[i]
 
@@ -240,9 +198,9 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
       return {
         ...av,
         shortDescription: rt?.shortDescription ?? null,
+        roomImages: rt?.images ?? null,
         averagePricePerNight: rate?.averagePricePerNight ?? rt?.basePrice ?? 0,
         averageMarketRatePerNight: rate?.averageMarketRatePerNight,
-        totalMarketAmount: rate?.totalMarketAmount,
         plans: [] as PublicRatesWithPlansPlan[],
         nightsForPlans: data1?.nights ?? nights,
         noRatePlanForOccupancy: false,
@@ -266,9 +224,9 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
     return {
       ...av,
       shortDescription: rt?.shortDescription ?? null,
+      roomImages: rt?.images ?? null,
       averagePricePerNight: rate?.averagePricePerNight ?? rt?.basePrice ?? 0,
       averageMarketRatePerNight: rate?.averageMarketRatePerNight,
-      totalMarketAmount: rate?.totalMarketAmount,
       plans: (single?.plans ?? []) as PublicRatesWithPlansPlan[],
       nightsForPlans: single?.nights ?? nights,
       noRatePlanForOccupancy: single?.noRatePlanForOccupancy ?? false,
@@ -294,180 +252,101 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
         : `${occupancy} guest${occupancy !== 1 ? 's' : ''}`
       : null
 
-  // Only show room types that have at least the requested number of rooms available
   const roomTypesAvailableForRequest = roomTypesWithRates.filter(
     (room) => room.availableRooms >= rooms && room.availableRooms > 0
   )
 
-  // Minimum total for stay summary (cheapest plan × allowed room count across all room types)
-  let minTotal: number | null = null
-  for (const room of roomTypesAvailableForRequest) {
-    const maxRooms = Math.min(rooms, Math.max(0, room.availableRooms))
-    if (maxRooms <= 0) continue
-    const plans = (room.plans ?? room.plansForOccupancy1 ?? []) as PublicRatesWithPlansPlan[]
-    for (const plan of plans) {
-      const total = Math.round(plan.totalAmount * maxRooms * 100) / 100
-      if (minTotal === null || total < minTotal) minTotal = total
-    }
-  }
+  const allRoomTypesSoldOut =
+    roomTypesWithRates.length > 0 && roomTypesAvailableForRequest.length === 0
 
   return (
-    <main className="bg-background text-foreground">
-      <section className="relative overflow-hidden border-b border-border/60 bg-background">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(219,230,76,0.08),transparent_24%),radial-gradient(circle_at_80%_10%,rgba(116,195,101,0.06),transparent_22%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(219,230,76,0.05),transparent_24%),radial-gradient(circle_at_80%_10%,rgba(116,195,101,0.05),transparent_22%)]" />
+    <main className="min-h-screen bg-background text-foreground">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(120,119,198,0.10),transparent_30%),radial-gradient(circle_at_80%_10%,rgba(56,189,248,0.08),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.08),transparent_28%)]" />
 
-        <Container className="relative py-6 sm:py-10 lg:py-20">
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-10 xl:items-start">
-            <div className="max-w-4xl">
-              <div className="hidden sm:inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/70 px-3 py-1.5 text-[10px] uppercase tracking-[0.28em] text-muted-foreground backdrop-blur-sm">
-                <Sparkles className="h-3.5 w-3.5" />
-                Room selection
+      <Container className="relative py-5 sm:py-6 lg:py-10">
+        <Link
+          href={`/book/${slug}?checkIn=${checkIn}&checkOut=${checkOut}&rooms=${rooms}${occupancy != null ? `&guests=${occupancy}` : ''}${guestsPerRoom != null ? `&guestsPerRoom=${guestsPerRoom}` : ''}`}
+          className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-4 py-2 text-sm font-medium text-foreground/80 backdrop-blur-xl transition hover:text-foreground dark:bg-background/40"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to stay details
+        </Link>
+
+        <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px] xl:gap-8">
+          <div className="min-w-0 space-y-5">
+            {roomTypesWithRates.map((room) => (
+              <RoomCard
+                key={room.roomTypeId}
+                slug={slug}
+                checkIn={checkIn}
+                checkOut={checkOut}
+                occupancyParam={occupancy != null ? String(occupancy) : ''}
+                rooms={rooms}
+                roomTypeId={room.roomTypeId}
+                name={room.name}
+                occupancy={room.occupancy}
+                shortDescription={room.shortDescription}
+                roomImages={room.roomImages}
+                availableRooms={room.availableRooms}
+                nights={nights}
+                averagePricePerNight={room.averagePricePerNight}
+                averageMarketRatePerNight={room.averageMarketRatePerNight}
+                plans={room.plans}
+                nightsForPlans={room.nightsForPlans}
+                noRatePlanForOccupancy={room.noRatePlanForOccupancy}
+                multiRoomMode={room.multiRoomMode}
+                totalGuests={room.totalGuests}
+                totalRooms={room.totalRooms}
+                shareCombinations={room.shareCombinations}
+                plansForOccupancy1={room.plansForOccupancy1}
+                plansForOccupancy2={room.plansForOccupancy2}
+                plansForOccupancy3={room.plansForOccupancy3}
+                plansForOccupancy4={room.plansForOccupancy4}
+                nightsForPlans1={room.nightsForPlans1}
+                nightsForPlans2={room.nightsForPlans2}
+                nightsForPlans3={room.nightsForPlans3}
+                nightsForPlans4={room.nightsForPlans4}
+              />
+            ))}
+
+            {allRoomTypesSoldOut && (
+              <div className="rounded-[2rem] border border-amber-300/60 bg-amber-50/80 p-6 shadow-[0_18px_45px_rgba(8,17,31,0.04)] dark:border-amber-700/40 dark:bg-amber-950/25 sm:p-7">
+                <div className="text-[11px] uppercase tracking-[0.24em] text-amber-800 dark:text-amber-200">
+                  Not enough rooms for this search
+                </div>
+                <p className="mt-3 text-sm leading-7 text-amber-900 dark:text-amber-300">
+                  No room type currently has {rooms} room{rooms !== 1 ? 's' : ''} available for these dates.
+                  Try different dates or search for fewer rooms.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Button href={`/book/${slug}`} variant="outline" color="slate" className="dark:text-white">
+                    Change dates or rooms
+                  </Button>
+                  <Link
+                    href={`/hotels/${slug}`}
+                    className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80 transition hover:text-foreground"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to property
+                  </Link>
+                </div>
               </div>
+            )}
 
-              <h1 className="mt-3 font-serif text-3xl leading-[0.95] tracking-[-0.05em] text-foreground sm:mt-5 sm:text-5xl lg:text-6xl">
-                Select your room
-                <span className="block">{property.publicName}</span>
-              </h1>
-
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:mt-5 sm:text-base sm:leading-8 lg:text-lg">
-                Review available room types and choose the rate plan that suits your stay best.
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-2 sm:mt-8 sm:gap-2.5">
-                <SummaryChip
-                  icon={<CalendarRange className="h-4 w-4" />}
-                  text={`${checkIn} → ${checkOut}`}
-                />
-                <SummaryChip
-                  icon={<BedDouble className="h-4 w-4" />}
-                  text={`${nights} night${nights !== 1 ? 's' : ''} · ${rooms} room${rooms !== 1 ? 's' : ''}`}
-                />
-                {guestSummary && (
-                  <SummaryChip
-                    icon={<Users className="h-4 w-4" />}
-                    text={guestSummary}
-                  />
-                )}
-              </div>
-            </div>
-
-            <div className="hidden xl:block xl:pt-6">
-              <div className="rounded-[2rem] border border-border/60 bg-card/70 p-5 shadow-[0_18px_45px_rgba(8,17,31,0.04)] dark:bg-card/50">
+            {roomTypesWithRates.length === 0 && (
+              <div className="rounded-[2rem] border border-border/60 bg-background/55 p-6 shadow-[0_18px_45px_rgba(8,17,31,0.04)] backdrop-blur-2xl dark:bg-background/30 sm:p-7">
                 <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                  Before you continue
+                  No rooms configured
                 </div>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                  Select the room and rate combination you prefer. Final booking details will be
-                  reviewed at checkout.
+                  No room types are currently configured for this property.
                 </p>
-
-                <div className="mt-5 border-t border-border/60 pt-5">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-foreground text-background">
-                      <ShieldCheck className="h-4 w-4" />
-                    </div>
-                    <p className="text-sm leading-7 text-muted-foreground">
-                      Direct booking gives you a clearer line to the property and a smoother start
-                      to the stay.
-                    </p>
-                  </div>
-                </div>
               </div>
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      <Container className="py-6 sm:py-10 lg:py-16">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px] xl:gap-10">
-          <div className="min-w-0">
-            <div className="flex flex-wrap gap-2 pb-4 xl:hidden">
-              <Button href={`/book/${slug}`} variant="outline" color="slate" className="dark:text-white">
-                Change dates
-              </Button>
-              <Link
-                href={`/hotels/${slug}`}
-                className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to property
-              </Link>
-            </div>
-            <div className="space-y-5">
-              {roomTypesAvailableForRequest.map((room) => (
-                <RoomCard
-                  key={room.roomTypeId}
-                  slug={slug}
-                  checkIn={checkIn}
-                  checkOut={checkOut}
-                  occupancyParam={occupancy != null ? String(occupancy) : ''}
-                  rooms={rooms}
-                  roomTypeId={room.roomTypeId}
-                  name={room.name}
-                  occupancy={room.occupancy}
-                  shortDescription={room.shortDescription}
-                  availableRooms={room.availableRooms}
-                  nights={nights}
-                  averagePricePerNight={room.averagePricePerNight}
-                  averageMarketRatePerNight={room.averageMarketRatePerNight}
-                  totalMarketAmount={room.totalMarketAmount}
-                  plans={room.plans}
-                  nightsForPlans={room.nightsForPlans}
-                  noRatePlanForOccupancy={room.noRatePlanForOccupancy}
-                  multiRoomMode={room.multiRoomMode}
-                  totalGuests={room.totalGuests}
-                  totalRooms={room.totalRooms}
-                  shareCombinations={room.shareCombinations}
-                  plansForOccupancy1={room.plansForOccupancy1}
-                  plansForOccupancy2={room.plansForOccupancy2}
-                  plansForOccupancy3={room.plansForOccupancy3}
-                  plansForOccupancy4={room.plansForOccupancy4}
-                  nightsForPlans1={room.nightsForPlans1}
-                  nightsForPlans2={room.nightsForPlans2}
-                  nightsForPlans3={room.nightsForPlans3}
-                  nightsForPlans4={room.nightsForPlans4}
-                />
-              ))}
-
-              {roomTypesAvailableForRequest.length === 0 && roomTypesWithRates.length > 0 && (
-                <div className="rounded-[2rem] border border-amber-300/60 bg-amber-50/80 p-6 shadow-[0_18px_45px_rgba(8,17,31,0.04)] dark:border-amber-700/40 dark:bg-amber-950/25 sm:p-7">
-                  <div className="text-[11px] uppercase tracking-[0.24em] text-amber-800 dark:text-amber-200">
-                    Not enough rooms for your search
-                  </div>
-                  <p className="mt-3 text-sm leading-7 text-amber-900 dark:text-amber-300">
-                    No room type has {rooms} room{rooms !== 1 ? 's' : ''} available for these dates.
-                    Try different dates or search for fewer rooms.
-                  </p>
-                  <div className="mt-5 flex flex-wrap gap-3">
-                    <Button href={`/book/${slug}`} variant="outline" color="slate" className="dark:text-white">
-                      Change dates or rooms
-                    </Button>
-                    <Link
-                      href={`/hotels/${slug}`}
-                      className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Back to property
-                    </Link>
-                  </div>
-                </div>
-              )}
-
-              {roomTypesWithRates.length === 0 && (
-                <div className="rounded-[2rem] border border-border/60 bg-card/70 p-6 shadow-[0_18px_45px_rgba(8,17,31,0.04)] dark:bg-card/50 sm:p-7">
-                  <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                    No rooms configured
-                  </div>
-                  <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                    No room types are currently configured for this property.
-                  </p>
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
-          <aside className="hidden min-w-0 xl:block">
-            <div className="rounded-[1.8rem] border border-border/60 bg-card/70 p-5 text-card-foreground shadow-[0_14px_35px_rgba(8,17,31,0.04)] dark:bg-card/50 xl:sticky xl:top-8">
+          <aside>
+            <div className="sticky top-8 rounded-[1.8rem] border border-border/60 bg-background/55 p-5 shadow-[0_18px_45px_rgba(8,17,31,0.05)] backdrop-blur-2xl dark:bg-background/30">
               <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
                 Stay summary
               </div>
@@ -486,56 +365,14 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
               <div className="mt-5 space-y-3 border-t border-border/60 pt-5">
                 <SummaryRow label="Check-in" value={checkIn} />
                 <SummaryRow label="Check-out" value={checkOut} />
-                <SummaryRow
-                  label="Stay"
-                  value={`${nights} night${nights !== 1 ? 's' : ''}`}
-                />
-                <SummaryRow
-                  label="Rooms"
-                  value={`${rooms} room${rooms !== 1 ? 's' : ''}`}
-                />
+                <SummaryRow label="Rooms" value={`${rooms} room${rooms !== 1 ? 's' : ''}`} />
                 {guestSummary && <SummaryRow label="Guests" value={guestSummary} />}
-                {minTotal != null && (
-                  <SummaryRow
-                    label="Total"
-                    value={`₹${formatPrice(minTotal)}`}
-                  />
-                )}
-              </div>
-
-              <div className="mt-6 flex flex-col gap-3 border-t border-border/60 pt-6">
-                <Button href={`/book/${slug}`} variant="outline" color="slate" className=' dark:text-white'>
-                  Change dates
-                </Button>
-
-                <Link
-                  href={`/hotels/${slug}`}
-                  className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to property
-                </Link>
               </div>
             </div>
           </aside>
         </div>
       </Container>
     </main>
-  )
-}
-
-function SummaryChip({
-  icon,
-  text,
-}: {
-  icon: React.ReactNode
-  text: string
-}) {
-  return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/70 px-4 py-2 text-sm text-muted-foreground dark:bg-card/50">
-      {icon}
-      {text}
-    </span>
   )
 }
 
@@ -551,7 +388,9 @@ function SummaryRow({
       <span className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
         {label}
       </span>
-      <span className="text-right text-sm text-foreground">{value}</span>
+      <span className="text-right text-sm text-foreground">
+        {value}
+      </span>
     </div>
   )
 }

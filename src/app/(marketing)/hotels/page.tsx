@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   ArrowRight,
   BadgeCheck,
@@ -11,23 +12,7 @@ import {
 import { getPublicProperties, getPublicPropertyBySlug } from '@/lib/api'
 import { Container } from '@/components/Container'
 import { Card, CardContent } from '@/components/ui/Card'
-
-/** Extract hero image URL from property images (fallback when list API doesn't return heroImageUrl) */
-function getHeroFromImages(images: unknown): string | undefined {
-  if (!images || !Array.isArray(images)) return undefined
-  const arr = images as Array<{ url?: string; isHero?: boolean; classification?: string }>
-  const hero = arr.find((i) => i?.isHero || i?.classification === 'hero')
-  return hero?.url ?? arr[0]?.url
-}
-
-/** Resolve relative image URLs (e.g. /uploads/...) to absolute using backend origin */
-function resolveImageUrl(url: string | undefined): string | undefined {
-  if (!url) return undefined
-  if (url.startsWith('http://') || url.startsWith('https://')) return url
-  const base = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'
-  const origin = base.replace(/\/api\/v1.*$/, '').replace(/\/$/, '')
-  return `${origin}${url.startsWith('/') ? '' : '/'}${url}`
-}
+import { pickHeroAndGallery } from '@/lib/media'
 
 export const metadata = {
   title: 'Our Hotels | Zenvana Hotels',
@@ -62,9 +47,9 @@ export default async function HotelsPage() {
       let heroUrl = p.heroImageUrl
       if (!heroUrl) {
         const full = await getPublicPropertyBySlug(p.slug)
-        heroUrl = getHeroFromImages(full?.images)
+        heroUrl = pickHeroAndGallery(full?.images).heroUrl
       }
-      return { ...p, heroImageUrl: resolveImageUrl(heroUrl) ?? heroUrl }
+      return { ...p, heroImageUrl: heroUrl }
     })
   )
 
@@ -98,10 +83,13 @@ export default async function HotelsPage() {
                     <Card className="h-full overflow-hidden rounded-[2rem] border-border/60 bg-card/70 text-card-foreground shadow-[0_18px_45px_rgba(8,17,31,0.05)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_26px_80px_rgba(8,17,31,0.1)] dark:bg-card/50">
                       <div className="relative overflow-hidden">
                         {p.heroImageUrl ? (
-                          <img
+                          <Image
                             src={p.heroImageUrl}
                             alt={p.publicName}
+                            width={1200}
+                            height={800}
                             className="h-[320px] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                           />
                         ) : (
                           <div className="flex h-[320px] w-full items-center justify-center bg-muted">

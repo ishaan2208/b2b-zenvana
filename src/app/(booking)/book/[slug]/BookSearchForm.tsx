@@ -1,25 +1,38 @@
 'use client'
 
-import { useState, useMemo, useEffect, useRef } from 'react'
+import type { FormEvent, ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
+import { differenceInCalendarDays, format } from 'date-fns'
+import {
+  BedDouble,
+  CalendarCheck,
+  Loader2,
+  LogIn,
+  LogOut,
+  Minus,
+  MoonStar,
+  Plus,
+  Users,
+} from 'lucide-react'
+
 import { Button } from '@/components/Button'
+import { Badge } from '@/components/ui/badge'
 import { Calendar } from '@/components/ui/calendar'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import {
-  CalendarCheck,
-  LogIn,
-  LogOut,
-  Minus,
-  Plus,
-} from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
 
-const MAX_GUESTS_PER_ROOM = 3
-const ROOMS_FOR_GUESTS_PER_ROOM_MODE = 6
+import {
+  MAX_GUESTS_PER_ROOM,
+  ROOMS_FOR_GUESTS_PER_ROOM_MODE,
+  clampGuestsPerRoom,
+  clampTotalGuests,
+  getMaxTotalGuests,
+} from '@/lib/booking-constants'
 
 function toDateString(d: Date): string {
   const y = d.getFullYear()
@@ -40,22 +53,42 @@ function startOfDay(d: Date): Date {
   return out
 }
 
-type BookSearchFormProps = { slug: string }
+type BookSearchFormProps = {
+  slug: string
+  propertyName?: string
+  location?: string
+}
 
 const calendarClassNames = {
   months: 'flex flex-col gap-4',
   month: 'flex flex-col gap-4',
-  caption: 'flex justify-center pt-1',
-  nav: 'flex gap-1',
+  caption: 'relative flex items-center justify-center pt-1',
+  caption_label: 'text-sm font-medium text-foreground',
+  nav: 'flex items-center gap-1',
+  nav_button:
+    'inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background text-foreground hover:bg-muted',
+  nav_button_previous: 'absolute left-1',
+  nav_button_next: 'absolute right-1',
   table: 'w-full border-collapse',
   head_row: 'flex',
-  head_cell: 'rounded-md w-9 font-normal text-[0.8rem] text-muted-foreground',
-  row: 'flex w-full mt-2',
+  head_cell:
+    'w-9 rounded-md text-[0.78rem] font-normal text-muted-foreground',
+  row: 'mt-2 flex w-full',
   cell: 'relative p-0 text-center text-sm focus-within:relative',
-  day: 'h-9 w-9 p-0 font-normal hover:bg-accent hover:text-accent-foreground rounded-md',
+  day: 'h-9 w-9 rounded-full p-0 font-normal text-foreground transition hover:bg-muted',
+  day_today: 'bg-muted text-foreground',
+  day_selected:
+    'bg-foreground text-background hover:bg-foreground hover:text-background',
+  day_disabled: 'text-muted-foreground/40 opacity-50',
+  day_outside: 'text-muted-foreground/35 opacity-40',
+  day_hidden: 'invisible',
 }
 
-export function BookSearchForm({ slug }: BookSearchFormProps) {
+export function BookSearchForm({
+  slug,
+  propertyName,
+  location,
+}: BookSearchFormProps) {
   const router = useRouter()
   const today = useMemo(() => startOfDay(new Date()), [])
   const tomorrow = useMemo(() => addDays(today, 1), [today])
@@ -67,29 +100,30 @@ export function BookSearchForm({ slug }: BookSearchFormProps) {
 
   const [rooms, setRooms] = useState(1)
   const [guests, setGuests] = useState(2)
+  const [isLoading, setIsLoading] = useState(false)
+
   const useGuestsPerRoomMode = rooms >= ROOMS_FOR_GUESTS_PER_ROOM_MODE
   const totalGuests = useGuestsPerRoomMode ? rooms * guests : guests
+  const nights =
+    checkIn && checkOut && startOfDay(checkOut) > startOfDay(checkIn)
+      ? differenceInCalendarDays(startOfDay(checkOut), startOfDay(checkIn))
+      : 0
+
   const prevModeRef = useRef(useGuestsPerRoomMode)
   const prevRoomsRef = useRef(rooms)
 
   useEffect(() => {
     if (useGuestsPerRoomMode && !prevModeRef.current) {
-      const oldTotal = guests
-      const perRoom = Math.min(
-        MAX_GUESTS_PER_ROOM,
-        Math.max(1, Math.floor(oldTotal / rooms))
-      )
+      const perRoom = clampGuestsPerRoom(Math.floor(guests / rooms) || 1)
       setGuests(perRoom)
     } else if (!useGuestsPerRoomMode && prevModeRef.current) {
-      const total = prevRoomsRef.current * guests
-      const maxTotal = rooms * MAX_GUESTS_PER_ROOM
-      setGuests(Math.min(maxTotal, Math.max(1, total)))
+      setGuests(clampTotalGuests(rooms, prevRoomsRef.current * guests))
     } else if (!useGuestsPerRoomMode) {
-      const maxTotal = rooms * MAX_GUESTS_PER_ROOM
-      if (guests > maxTotal) setGuests(maxTotal)
-      if (guests < 1) setGuests(1)
-    } else if (guests < 1 || guests > MAX_GUESTS_PER_ROOM) {
-      setGuests(Math.min(MAX_GUESTS_PER_ROOM, Math.max(1, guests)))
+      if (guests > getMaxTotalGuests(rooms) || guests < 1) {
+        setGuests(clampTotalGuests(rooms, guests))
+      }
+    } else {
+      setGuests((current) => clampGuestsPerRoom(current))
     }
 
     prevModeRef.current = useGuestsPerRoomMode
@@ -99,12 +133,20 @@ export function BookSearchForm({ slug }: BookSearchFormProps) {
 
   const checkOutMin = checkIn ? addDays(checkIn, 1) : tomorrow
   const isCheckOutValid =
-    checkIn != null && checkOut != null && startOfDay(checkOut) > startOfDay(checkIn)
+    checkIn != null &&
+    checkOut != null &&
+    startOfDay(checkOut) > startOfDay(checkIn)
+
+  const maxGuestsValue = useGuestsPerRoomMode
+    ? MAX_GUESTS_PER_ROOM
+    : getMaxTotalGuests(rooms)
 
   const handleCheckInSelect = (date: Date | undefined) => {
     setCheckIn(date ?? undefined)
+
     if (date) {
       setCheckInOpen(false)
+
       if (checkOut && startOfDay(checkOut) <= startOfDay(date)) {
         setCheckOut(addDays(date, 1))
       }
@@ -116,7 +158,7 @@ export function BookSearchForm({ slug }: BookSearchFormProps) {
     if (date) setCheckOutOpen(false)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!isCheckOutValid || !checkIn || !checkOut) return
 
@@ -131,43 +173,84 @@ export function BookSearchForm({ slug }: BookSearchFormProps) {
       params.set('guestsPerRoom', String(guests))
     }
 
-    router.push(`/book/${slug}/rooms?${params}`)
+    setIsLoading(true)
+    try {
+      await router.push(`/book/${slug}/rooms?${params}`)
+    } catch {
+      setIsLoading(false)
+    }
   }
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="overflow-hidden rounded-[2rem] border border-border/60 bg-card/75 text-card-foreground shadow-[0_24px_60px_rgba(8,17,31,0.08)] backdrop-blur-sm dark:bg-card/50"
+      className="overflow-hidden rounded-[2rem] border border-border/60 bg-background/60 text-card-foreground shadow-[0_28px_80px_rgba(8,17,31,0.10)] backdrop-blur-2xl dark:bg-background/30"
     >
-      <div className="border-b border-border/60 px-5 py-5 sm:px-6">
-        <div className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
-          Search your stay
+      <div className="border-b border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),transparent)] px-5 py-5 sm:px-6 sm:py-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-xs">
+
+
+            <h2 className="mt-4 font-serif text-2xl tracking-[-0.04em] text-foreground">
+              Select dates and occupancy
+            </h2>
+
+            <p className="mt-2 text-sm leading-7 text-muted-foreground">
+              {propertyName
+                ? `Choose your stay details for ${propertyName}.`
+                : 'Choose your stay details to see available room types and plans.'}
+            </p>
+          </div>
+
+
         </div>
       </div>
 
-      <div className="px-5 py-5 sm:px-6 sm:py-6">
-        <div className="flex flex-col gap-6">
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr]">
+      <div className="space-y-6 px-5 py-5 sm:px-6 sm:py-6">
+        <section className="rounded-[1.6rem] border border-border/60 bg-background/72 p-4 backdrop-blur-xl dark:bg-background/35 sm:p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                Stay dates
+              </div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Pick check-in and check-out first. The next step will show room types and plans for these dates.
+              </p>
+            </div>
+
+            <div className="hidden rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-xs font-medium text-foreground sm:block dark:bg-background/40">
+              {nights > 0 ? `${nights} night${nights === 1 ? '' : 's'}` : 'Choose dates'}
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <Field label="Check-in">
               <Popover open={checkInOpen} onOpenChange={setCheckInOpen}>
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex h-14 w-full items-center gap-3 rounded-[1.1rem] border border-border/70 bg-background/70 px-4 text-left text-foreground shadow-none outline-none transition-colors hover:bg-background/90 focus:border-primary focus:ring-2 focus:ring-primary/15 dark:bg-background/50 dark:hover:bg-background/70"
+                    className="flex min-h-[4.5rem] w-full items-center gap-3 rounded-[1.25rem] border border-border/70 bg-background/80 px-4 text-left text-foreground shadow-none outline-none transition hover:bg-background focus:border-primary focus:ring-2 focus:ring-primary/15 dark:bg-background/40"
                   >
-                    <LogIn className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    <span>
-                      {checkIn ? format(checkIn, 'MMM d, yyyy') : (
-                        <span className="text-muted-foreground">Select date</span>
-                      )}
-                    </span>
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background/90 dark:bg-background/45">
+                      <LogIn className="h-5 w-5 text-muted-foreground" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                        Arrival
+                      </div>
+                      <div className="mt-1 truncate text-sm font-medium text-foreground sm:text-base">
+                        {checkIn ? format(checkIn, 'EEE, MMM d, yyyy') : 'Select date'}
+                      </div>
+                    </div>
                   </button>
                 </PopoverTrigger>
+
                 <PopoverContent
-                  className="w-auto p-0"
+                  className="w-[calc(100vw-2rem)] max-w-[23rem] rounded-[1.5rem] border border-border/60 bg-popover/95 p-3 shadow-[0_24px_60px_rgba(8,17,31,0.16)] backdrop-blur-2xl"
                   align="start"
                   side="bottom"
-                  sideOffset={8}
+                  sideOffset={10}
                   collisionPadding={16}
                 >
                   <Calendar
@@ -176,6 +259,7 @@ export function BookSearchForm({ slug }: BookSearchFormProps) {
                     selected={checkIn}
                     onSelect={handleCheckInSelect}
                     disabled={(date) => startOfDay(date) < today}
+                    className="rounded-[1.25rem]"
                     classNames={calendarClassNames}
                   />
                 </PopoverContent>
@@ -187,21 +271,28 @@ export function BookSearchForm({ slug }: BookSearchFormProps) {
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex h-14 w-full items-center gap-3 rounded-[1.1rem] border border-border/70 bg-background/70 px-4 text-left text-foreground shadow-none outline-none transition-colors hover:bg-background/90 focus:border-primary focus:ring-2 focus:ring-primary/15 dark:bg-background/50 dark:hover:bg-background/70"
+                    className="flex min-h-[4.5rem] w-full items-center gap-3 rounded-[1.25rem] border border-border/70 bg-background/80 px-4 text-left text-foreground shadow-none outline-none transition hover:bg-background focus:border-primary focus:ring-2 focus:ring-primary/15 dark:bg-background/40"
                   >
-                    <LogOut className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    <span>
-                      {checkOut ? format(checkOut, 'MMM d, yyyy') : (
-                        <span className="text-muted-foreground">Select date</span>
-                      )}
-                    </span>
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background/90 dark:bg-background/45">
+                      <LogOut className="h-5 w-5 text-muted-foreground" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                        Departure
+                      </div>
+                      <div className="mt-1 truncate text-sm font-medium text-foreground sm:text-base">
+                        {checkOut ? format(checkOut, 'EEE, MMM d, yyyy') : 'Select date'}
+                      </div>
+                    </div>
                   </button>
                 </PopoverTrigger>
+
                 <PopoverContent
-                  className="w-auto p-0"
+                  className="w-[calc(100vw-2rem)] max-w-[23rem] rounded-[1.5rem] border border-border/60 bg-popover/95 p-3 shadow-[0_24px_60px_rgba(8,17,31,0.16)] backdrop-blur-2xl"
                   align="start"
                   side="bottom"
-                  sideOffset={8}
+                  sideOffset={10}
                   collisionPadding={16}
                 >
                   <Calendar
@@ -210,81 +301,116 @@ export function BookSearchForm({ slug }: BookSearchFormProps) {
                     selected={checkOut}
                     onSelect={handleCheckOutSelect}
                     disabled={(date) => startOfDay(date) < startOfDay(checkOutMin)}
+                    className="rounded-[1.25rem]"
                     classNames={calendarClassNames}
                   />
                 </PopoverContent>
               </Popover>
+
               {!isCheckOutValid && checkIn && checkOut && (
                 <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-                  Check-out must be after check-in
+                  Check-out must be after check-in.
                 </p>
               )}
             </Field>
+          </div>
+        </section>
 
+        <section className="rounded-[1.6rem] border border-border/60 bg-background/72 p-4 backdrop-blur-xl dark:bg-background/35 sm:p-5">
+          <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+            Occupancy
+          </div>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Set rooms and guests now so the next page shows the right availability and pricing.
+          </p>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <CounterCard
+              icon={<BedDouble className="h-4.5 w-4.5" />}
               label="Rooms"
-              hint="Choose how many rooms you need"
+              hint="How many rooms do you need?"
               value={rooms}
-              onDecrease={() => setRooms((r) => Math.max(1, r - 1))}
-              onIncrease={() => setRooms((r) => Math.min(10, r + 1))}
+              min={1}
+              max={10}
+              onDecrease={() => setRooms((current) => Math.max(1, current - 1))}
+              onIncrease={() => setRooms((current) => Math.min(10, current + 1))}
               decreaseLabel="Decrease rooms"
               increaseLabel="Increase rooms"
             />
 
             <CounterCard
-              label={
-                useGuestsPerRoomMode
-                  ? 'Guests per room'
-                  : 'Guests'
-              }
+              icon={<Users className="h-4.5 w-4.5" />}
+              label={useGuestsPerRoomMode ? 'Guests per room' : 'Guests'}
               hint={
                 useGuestsPerRoomMode
-                  ? 'Maximum 3 guests per room'
-                  : `Up to ${rooms * MAX_GUESTS_PER_ROOM} guests`
+                  ? `Maximum ${MAX_GUESTS_PER_ROOM} guests per room`
+                  : `Up to ${getMaxTotalGuests(rooms)} guests in total`
               }
               value={guests}
-              valueSuffix={useGuestsPerRoomMode ? ' per room' : ''}
-              onDecrease={() => setGuests((g) => Math.max(1, g - 1))}
+              valueBadge={useGuestsPerRoomMode ? 'Per room' : 'Total'}
+              min={1}
+              max={maxGuestsValue}
+              onDecrease={() => setGuests((current) => Math.max(1, current - 1))}
               onIncrease={() =>
-                setGuests((g) =>
+                setGuests((current) =>
                   useGuestsPerRoomMode
-                    ? Math.min(MAX_GUESTS_PER_ROOM, g + 1)
-                    : Math.min(rooms * MAX_GUESTS_PER_ROOM, g + 1)
+                    ? clampGuestsPerRoom(current + 1)
+                    : clampTotalGuests(rooms, current + 1)
                 )
               }
               decreaseLabel="Decrease guests"
               increaseLabel="Increase guests"
             />
           </div>
+        </section>
 
-          <div className="rounded-[1.35rem] border border-border/60 bg-background/55 px-4 py-4 dark:bg-background/35">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                  Summary
-                </div>
-                <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  {rooms} room{rooms !== 1 ? 's' : ''},{' '}
-                  {totalGuests} guest{totalGuests !== 1 ? 's' : ''}.
-                  {useGuestsPerRoomMode ? ' Guests will be applied per room.' : ''}
-                </p>
-              </div>
-
-              <div className="hidden rounded-full border border-border/60 bg-card px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-muted-foreground sm:block">
-                Direct booking
-              </div>
-            </div>
+        <section className="rounded-[1.6rem] border border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.03))] p-4 backdrop-blur-2xl dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))]">
+          <div className="flex flex-wrap items-center gap-2">
+            <SummaryPill
+              icon={<MoonStar className="h-3.5 w-3.5" />}
+              text={
+                nights > 0
+                  ? `${nights} night${nights === 1 ? '' : 's'}`
+                  : 'Choose stay length'
+              }
+            />
+            <SummaryPill
+              icon={<BedDouble className="h-3.5 w-3.5" />}
+              text={`${rooms} room${rooms === 1 ? '' : 's'}`}
+            />
+            <SummaryPill
+              icon={<Users className="h-3.5 w-3.5" />}
+              text={`${totalGuests} guest${totalGuests === 1 ? '' : 's'}`}
+            />
           </div>
 
+          <Separator className="my-4 bg-border/60" />
+
+          <p className="text-sm leading-7 text-muted-foreground">
+            {useGuestsPerRoomMode
+              ? `You have selected ${rooms} rooms with ${guests} guest${guests === 1 ? '' : 's'} per room.`
+              : `You have selected ${rooms} room${rooms === 1 ? '' : 's'} for ${totalGuests} guest${totalGuests === 1 ? '' : 's'}.`}
+          </p>
+        </section>
+
+        <div className="space-y-3">
           <Button
             type="submit"
             color="blue"
-            className="h-14 w-full rounded-[1.1rem] text-sm font-medium"
-            disabled={!isCheckOutValid}
+            className="h-14 w-full rounded-[1.2rem] text-sm font-medium shadow-[0_14px_34px_rgba(37,99,235,0.22)]"
+            disabled={!isCheckOutValid || isLoading}
           >
-            <CalendarCheck className="mr-2 h-4 w-4" aria-hidden />
-            See rooms & rates
+            {isLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+            ) : (
+              <CalendarCheck className="mr-2 h-4 w-4" aria-hidden />
+            )}
+            {isLoading ? 'Loading rooms…' : 'See rooms & rates'}
           </Button>
+
+          <p className="text-center text-xs leading-6 text-muted-foreground">
+            Next, we’ll show available room types and plans for your selected dates.
+          </p>
         </div>
       </div>
     </form>
@@ -294,14 +420,12 @@ export function BookSearchForm({ slug }: BookSearchFormProps) {
 function Field({
   label,
   children,
-  className,
 }: {
   label: string
-  children: React.ReactNode
-  className?: string
+  children: ReactNode
 }) {
   return (
-    <div className={className}>
+    <div>
       <label className="mb-2 block text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
         {label}
       </label>
@@ -311,51 +435,65 @@ function Field({
 }
 
 function CounterCard({
+  icon,
   label,
   hint,
   value,
-  valueSuffix,
+  valueBadge,
+  min,
+  max,
   onDecrease,
   onIncrease,
   decreaseLabel,
   increaseLabel,
 }: {
+  icon: ReactNode
   label: string
   hint: string
   value: number
-  valueSuffix?: string
+  valueBadge?: string
+  min: number
+  max: number
   onDecrease: () => void
   onIncrease: () => void
   decreaseLabel: string
   increaseLabel: string
 }) {
+  const canDecrease = value > min
+  const canIncrease = value < max
+
   return (
-    <div className="rounded-[1.35rem] border border-border/60 bg-background/55 p-4 dark:bg-background/35">
+    <div className="rounded-[1.45rem] border border-border/60 bg-background/80 p-4 shadow-[0_10px_28px_rgba(8,17,31,0.03)] dark:bg-background/40">
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/90 text-foreground dark:bg-background/45">
+              {icon}
+            </span>
             {label}
           </div>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">{hint}</p>
+
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">{hint}</p>
         </div>
 
-        <div className="rounded-full border border-border/60 bg-card px-3 py-1.5 text-sm font-medium text-foreground dark:bg-card/70">
-          {value}
-          {valueSuffix}
+        <div className="shrink-0 rounded-full border border-border/60 bg-background/90 px-3 py-1.5 text-xs font-medium text-foreground dark:bg-background/45">
+          {valueBadge ?? value}
+          {valueBadge ? ` · ${value}` : ''}
         </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-5 flex items-center justify-between gap-3">
         <button
           type="button"
           aria-label={decreaseLabel}
           onClick={onDecrease}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border/70 bg-card text-foreground transition-colors hover:bg-accent/40 focus:outline-none focus:ring-2 focus:ring-primary/15 dark:bg-card/70"
+          disabled={!canDecrease}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border/70 bg-background/90 text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-background/45"
         >
           <Minus className="h-4 w-4" />
         </button>
 
-        <div className="min-w-[2.5rem] text-center text-lg font-medium tracking-tight text-foreground">
+        <div className="min-w-[3rem] text-center text-2xl font-medium tracking-tight text-foreground">
           {value}
         </div>
 
@@ -363,7 +501,8 @@ function CounterCard({
           type="button"
           aria-label={increaseLabel}
           onClick={onIncrease}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border/70 bg-card text-foreground transition-colors hover:bg-accent/40 focus:outline-none focus:ring-2 focus:ring-primary/15 dark:bg-card/70"
+          disabled={!canIncrease}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border/70 bg-background/90 text-foreground transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-background/45"
         >
           <Plus className="h-4 w-4" />
         </button>
@@ -376,11 +515,26 @@ function InfoPill({
   icon,
   text,
 }: {
-  icon: React.ReactNode
+  icon: ReactNode
   text: string
 }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 px-3 py-1.5 text-xs text-muted-foreground dark:bg-background/40">
+    <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur-xl dark:bg-background/35">
+      {icon}
+      {text}
+    </span>
+  )
+}
+
+function SummaryPill({
+  icon,
+  text,
+}: {
+  icon: ReactNode
+  text: string
+}) {
+  return (
+    <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/72 px-3 py-1.5 text-xs font-medium text-foreground backdrop-blur-xl dark:bg-background/35">
       {icon}
       {text}
     </span>

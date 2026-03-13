@@ -95,9 +95,9 @@
     --input: 220 14% 18%;
     --ring: 64 76% 60%;
 
-    /* react-day-picker – dark theme */
+    /* react-day-picker – dark theme (hover bg dark so light text stays visible) */
     --rdp-accent-color: hsl(var(--primary));
-    --rdp-background-color: hsl(var(--accent) / 0.2);
+    --rdp-background-color: hsl(var(--muted));
     --rdp-selected-color: hsl(var(--primary-foreground));
 
     color-scheme: dark;

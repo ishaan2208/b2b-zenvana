@@ -85,3 +85,15 @@ export function filterPreferNoTriple(combinations: ShareCombination[]): ShareCom
   if (!anyWithoutTriple) return combinations
   return combinations.filter((c) => !hasTriple(c))
 }
+
+/**
+ * Among combinations, keep only those that maximize double-sharing (occupancy 2).
+ * E.g. for 5 rooms, 8 guests: prefer "4 double, 1 single" over "2 double, 3 triple".
+ * Use after filterPreferNoTriple so the system automatically picks the split with the most double rooms.
+ */
+export function filterPreferDoubleSharing(combinations: ShareCombination[]): ShareCombination[] {
+  if (combinations.length <= 1) return combinations
+  const doubleCount = (c: ShareCombination) => c.breakdown[2] ?? 0
+  const maxDouble = Math.max(...combinations.map(doubleCount))
+  return combinations.filter((c) => doubleCount(c) === maxDouble)
+}
