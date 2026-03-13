@@ -123,10 +123,7 @@ export function Header() {
                   </span>
                 </div>
 
-                <div className="hidden items-center gap-1.5 text-sm font-medium tracking-tight text-foreground/90 min-[430px]:flex">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
-                  <span className="truncate">Editorial stays, booking first</span>
-                </div>
+
               </div>
             </Link>
 
