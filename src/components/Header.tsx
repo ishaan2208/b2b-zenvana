@@ -42,7 +42,6 @@ const nav: NavItem[] = [
   { href: '/blog', label: 'Blog', icon: NotebookPen, blurb: 'Stories & guides' },
   { href: '/contact', label: 'Contact', icon: Phone, blurb: 'Get in touch' },
   { href: '/about', label: 'About', icon: Info, blurb: 'Our philosophy' },
-  { href: '/destinations', label: 'Destinations', icon: MapPinned, blurb: 'Explore locally' },
   { href: '/offers', label: 'Offers', icon: BadgePercent, blurb: 'Best current deals' },
 ]
 
@@ -253,7 +252,7 @@ function MobileMenu({
                     <span>Zenvana Hotels</span>
                   </div>
                   <div className="mt-1 text-base font-semibold tracking-tight text-foreground">
-                    Calm stay discovery, without the menu spaghetti.
+                    Boutique stays
                   </div>
                 </div>
 

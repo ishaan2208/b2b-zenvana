@@ -12,7 +12,7 @@ import {
 
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/Button'
-import { PriceWithTax } from '@/components/PriceWithTax'
+import { PriceWithMarketRate } from '@/components/PriceWithMarketRate'
 import type { PublicRatesWithPlansPlan } from '@/lib/api'
 
 type Props = {
@@ -61,6 +61,10 @@ export function RatePlanSelector({
   const totalAmount = selectedPlan
     ? Math.round(selectedPlan.totalAmount * numRooms * 100) / 100
     : 0
+  const totalMarketAmount =
+    selectedPlan?.marketTotalAmount != null
+      ? Math.round(selectedPlan.marketTotalAmount * numRooms * 100) / 100
+      : undefined
 
   if (plans.length === 0) {
     return (
@@ -133,7 +137,13 @@ export function RatePlanSelector({
                         </h3>
 
                         <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                          <PriceWithTax amount={plan.averagePricePerNight} suffix="/night average" size="sm" />
+                          <PriceWithMarketRate
+                            amount={plan.averagePricePerNight}
+                            marketAmount={plan.averageMarketRatePerNight}
+                            suffix="/night average"
+                            size="sm"
+                            showTaxBreakup={true}
+                          />
                         </p>
                       </div>
 
@@ -142,7 +152,12 @@ export function RatePlanSelector({
                           Total
                         </div>
                         <div className="mt-1 text-lg font-semibold text-foreground">
-                          <PriceWithTax amount={plan.totalAmount} size="lg" />
+                          <PriceWithMarketRate
+                            amount={plan.totalAmount}
+                            marketAmount={plan.marketTotalAmount}
+                            size="lg"
+                            showTaxBreakup={true}
+                          />
                         </div>
                       </div>
                     </div>
@@ -188,9 +203,21 @@ export function RatePlanSelector({
                         {selectedPlan.label}
                       </p>
                       <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                        <PriceWithTax amount={selectedPlan.averagePricePerNight} suffix="/night" size="sm" /> ·{' '}
+                        <PriceWithMarketRate
+                          amount={selectedPlan.averagePricePerNight}
+                          marketAmount={selectedPlan.averageMarketRatePerNight}
+                          suffix="/night"
+                          size="sm"
+                          showTaxBreakup={true}
+                        /> ·{' '}
                         {nights} night{nights !== '1' ? 's' : ''} ·{' '}
-                        <PriceWithTax amount={selectedPlan.totalAmount} suffix=" per room" size="sm" />
+                        <PriceWithMarketRate
+                          amount={selectedPlan.totalAmount}
+                          marketAmount={selectedPlan.marketTotalAmount}
+                          suffix=" per room"
+                          size="sm"
+                          showTaxBreakup={true}
+                        />
                       </p>
                     </div>
                   </div>
@@ -241,7 +268,12 @@ export function RatePlanSelector({
                 </div>
 
                 <div className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
-                  <PriceWithTax amount={totalAmount} size="2xl" />
+                  <PriceWithMarketRate
+                    amount={totalAmount}
+                    marketAmount={totalMarketAmount}
+                    size="2xl"
+                    showTaxBreakup={true}
+                  />
                 </div>
 
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">
@@ -259,6 +291,9 @@ export function RatePlanSelector({
                       roomTypeName,
                       nights,
                       totalAmount: String(totalAmount),
+                      ...(totalMarketAmount != null && totalMarketAmount > totalAmount
+                        ? { marketTotal: String(totalMarketAmount) }
+                        : {}),
                       numRooms: String(numRooms),
                       ratePlan: selectedPlan.plan,
                       ratePlanLabel: selectedPlan.label,

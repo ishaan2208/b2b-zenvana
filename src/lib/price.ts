@@ -17,3 +17,9 @@ export function splitTotalIntoBaseAndTax(total: number): {
 export function formatPrice(value: number, locale = 'en-IN'): string {
   return value.toLocaleString('en-IN', { maximumFractionDigits: 0, minimumFractionDigits: 0 })
 }
+
+/** Percentage discount when paying directAmount instead of marketAmount. Returns 0 if no discount. */
+export function discountPercent(marketAmount: number, directAmount: number): number {
+  if (marketAmount <= 0 || directAmount >= marketAmount) return 0
+  return Math.round(((marketAmount - directAmount) / marketAmount) * 100)
+}

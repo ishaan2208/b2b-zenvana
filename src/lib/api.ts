@@ -147,9 +147,11 @@ export type PublicRatesResponse = {
   checkIn: string
   checkOut: string
   nights: number
-  perNightRates?: Array<{ date: string; directRate: number }>
+  perNightRates?: Array<{ date: string; directRate: number; marketRate: number }>
   averagePricePerNight: number
+  averageMarketRatePerNight?: number
   totalAmount: number
+  totalMarketAmount?: number
   currency: string
 }
 
@@ -176,9 +178,11 @@ export type PublicRatesBulkRoomType = {
   roomTypeId: number
   roomTypeName: string
   nights: number
-  perNightRates: Array<{ date: string; directRate: number }>
+  perNightRates: Array<{ date: string; directRate: number; marketRate: number }>
   averagePricePerNight: number
+  averageMarketRatePerNight?: number
   totalAmount: number
+  totalMarketAmount?: number
 }
 
 export type PublicRatesBulkResponse = {
@@ -210,7 +214,9 @@ export type PublicRatesWithPlansPlan = {
   planCode?: string
   label: string
   totalAmount: number
+  marketTotalAmount?: number
   averagePricePerNight: number
+  averageMarketRatePerNight?: number
   /** EP | CP | MAP | AP — same plan type must be used for all rooms in multi-room booking */
   mealPlan?: string
 }
@@ -223,6 +229,7 @@ export type PublicRatesWithPlansResponse = {
   nights: number
   occupancy: number | null
   baseDirectTotal: number
+  baseMarketTotal?: number
   plans: PublicRatesWithPlansPlan[]
   /** True when occupancy was requested but no rate plans exist for that guest count (show sold out). */
   noRatePlanForOccupancy?: boolean
@@ -242,12 +249,23 @@ export async function getPublicRatesWithPlans(
     checkOut,
   })
   if (occupancy != null) params.set('occupancy', String(occupancy))
-  const res = await fetch(
-    `${BACKEND_URL}/public/properties/${encodeURIComponent(slug)}/rates/plans?${params}`
-  )
-  if (!res.ok) return null
-  const json = await res.json()
-  return json?.data ?? null
+  const url = `${BACKEND_URL}/public/properties/${encodeURIComponent(slug)}/rates/plans?${params}`
+  const res = await fetch(url)
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    console.log('[zenvana/api] getPublicRatesWithPlans failed', {
+      url,
+      status: res.status,
+      ok: res.ok,
+      error: json?.error ?? json?.message,
+    })
+    return null
+  }
+  const data = json?.data ?? null
+  if (data == null) {
+    console.log('[zenvana/api] getPublicRatesWithPlans empty data', { url, json: json?.data })
+  }
+  return data
 }
 
 // -----------------------------------------------------------------------------

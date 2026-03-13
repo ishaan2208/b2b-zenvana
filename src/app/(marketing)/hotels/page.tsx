@@ -115,7 +115,7 @@ export default async function HotelsPage() {
                         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(8,17,31,0.03)_0%,rgba(8,17,31,0.14)_42%,rgba(8,17,31,0.78)_100%)]" />
 
                         <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-                          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[10px] uppercase tracking-[0.24em] text-white/78 backdrop-blur-md">
+                          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[10px] uppercase tracking-[0.24em] dark:text-white/78 text-[#dbe64c] backdrop-blur-md">
                             <Sparkles className="h-3.5 w-3.5 text-[#dbe64c]" />
                             Zenvana Stay
                           </div>

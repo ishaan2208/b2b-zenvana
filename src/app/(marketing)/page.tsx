@@ -108,7 +108,7 @@ function HeroSection({
       </div>
 
       <div className="container-shell relative flex min-h-[92svh] flex-col items-center justify-center pb-10 pt-32 sm:pb-12 lg:pb-24">
-          <div className="relative z-10 max-w-4xl mx-auto text-center text-white">
+        <div className="relative z-10 max-w-4xl mx-auto text-center text-white">
           <div className="relative space-y-5 sm:space-y-6 lg:space-y-7">
             <h1 className="max-w-3xl font-serif text-3xl font-semibold leading-tight tracking-[-0.05em] sm:text-4xl lg:text-5xl">
               Discover the Best Hotels in Dehradun with Zenvana
@@ -508,7 +508,7 @@ function BookingCtaSection() {
             </p>
 
             <div className="mt-6">
-              <Link href="/hotels" className="site-button-light border-white/20 bg-white/12 text-white hover:bg-white/16">
+              <Link href="/hotels" className="site-button-light border-white/20 bg-white/12 dark:text-white hover:bg-white/16">
                 Book Your Stay
               </Link>
             </div>

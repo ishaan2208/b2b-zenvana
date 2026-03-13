@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 
 import { Button } from '@/components/Button'
-import { PriceWithTax } from '@/components/PriceWithTax'
+import { PriceWithMarketRate } from '@/components/PriceWithMarketRate'
 import { createPublicBooking } from '@/lib/api'
 
 type Props = {
@@ -24,6 +24,7 @@ type Props = {
   roomTypeName: string
   nights: string
   totalAmount: string
+  marketTotal?: number
   numRooms?: number
   ratePlan?: string
   occupancy?: number
@@ -54,6 +55,7 @@ export default function CheckoutForm({
   roomTypeName,
   nights,
   totalAmount,
+  marketTotal,
   numRooms: _numRooms,
   ratePlan: _ratePlan,
   occupancy,
@@ -76,6 +78,8 @@ export default function CheckoutForm({
     checkOut,
     roomTypeId: parseInt(roomTypeId, 10),
     totalAmount: parseFloat(totalAmount),
+    numRooms: _numRooms ?? 1,
+    ratePlan: _ratePlan,
     occupancy: occupancy ?? 1,
   })
 
@@ -267,7 +271,14 @@ export default function CheckoutForm({
                 title="Pay now"
                 description={
                   <>
-                    Complete payment online for <PriceWithTax amount={Number(totalAmount)} size="sm" showTaxBreakup={false} />.
+                    Complete payment online for{' '}
+                    <PriceWithMarketRate
+                      amount={Number(totalAmount)}
+                      marketAmount={marketTotal}
+                      size="sm"
+                      showTaxBreakup={false}
+                    />
+                    .
                   </>
                 }
                 icon={<CreditCard className="h-5 w-5" />}

@@ -22,7 +22,10 @@ const MAX_GUESTS_PER_ROOM = 3
 const ROOMS_FOR_GUESTS_PER_ROOM_MODE = 6
 
 function toDateString(d: Date): string {
-  return d.toISOString().slice(0, 10)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 function addDays(date: Date, days: number): Date {

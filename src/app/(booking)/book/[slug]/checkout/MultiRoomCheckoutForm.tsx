@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 
 import { Button } from '@/components/Button'
-import { PriceWithTax } from '@/components/PriceWithTax'
+import { PriceWithMarketRate } from '@/components/PriceWithMarketRate'
 import { createPublicBookingWithRoomLines } from '@/lib/api'
 
 const MULTI_ROOM_STORAGE_KEY = 'zenvana_multi_room_booking'
@@ -31,6 +31,7 @@ type StoredPayload = {
     tariff: number
   }>
   totalAmount: number
+  marketTotal?: number
 }
 
 type Props = {
@@ -84,7 +85,8 @@ export default function MultiRoomCheckoutForm({
     )
   }
 
-  const { checkIn, checkOut, nights, roomTypeName, roomLines, totalAmount } = payload
+  const { checkIn, checkOut, nights, roomTypeName, roomLines, totalAmount, marketTotal } =
+    payload
 
   const byOcc = roomLines.reduce((acc, line) => {
     const key = line.occupancy
@@ -166,7 +168,14 @@ export default function MultiRoomCheckoutForm({
             <SummaryCard
               icon={<ShieldCheck className="h-4.5 w-4.5" />}
               label="Total"
-              value={<PriceWithTax amount={Number(totalAmount)} size="default" showTaxBreakup={false} />}
+              value={
+                <PriceWithMarketRate
+                  amount={Number(totalAmount)}
+                  marketAmount={marketTotal}
+                  size="default"
+                  showTaxBreakup={false}
+                />
+              }
             />
           </div>
 

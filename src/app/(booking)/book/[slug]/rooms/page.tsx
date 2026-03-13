@@ -17,6 +17,7 @@ import {
   getPublicRatesWithPlans,
 } from '@/lib/api'
 import type { PublicRatesWithPlansPlan } from '@/lib/api'
+import { formatPrice } from '@/lib/price'
 import { Button } from '@/components/Button'
 import { Container } from '@/components/Container'
 import { RoomCard } from './RoomCard'
@@ -60,6 +61,40 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
     getPublicAvailability(slug, checkIn, checkOut),
     getPublicRatesBulk(slug, checkIn, checkOut, occupancy),
   ])
+
+  // Debug: fetched availability and rates bulk
+  console.log('[zenvana/rooms] fetched', {
+    slug,
+    checkIn,
+    checkOut,
+    occupancy,
+    availability: availability
+      ? {
+          checkIn: availability.checkIn,
+          checkOut: availability.checkOut,
+          nights: availability.nights,
+          roomTypes: availability.roomTypes?.map((r) => ({
+            roomTypeId: r.roomTypeId,
+            name: r.name,
+            availableRooms: r.availableRooms,
+            nights: r.nights,
+          })),
+        }
+      : null,
+    ratesBulk: ratesBulk
+      ? {
+          checkIn: ratesBulk.checkIn,
+          checkOut: ratesBulk.checkOut,
+          nights: ratesBulk.nights,
+          roomTypesCount: ratesBulk.roomTypes?.length ?? 0,
+          roomTypes: ratesBulk.roomTypes?.map((r) => ({
+            roomTypeId: r.roomTypeId,
+            roomTypeName: r.roomTypeName,
+            totalAmount: r.totalAmount,
+          })),
+        }
+      : null,
+  })
 
   if (!property) notFound()
 
@@ -162,6 +197,34 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
     )
   )
 
+  // Debug: fetched rates/plans per room type
+  console.log('[zenvana/rooms] plansPerType', {
+    slug,
+    isMultiRoomWithGuests,
+    occupancy,
+    perRoomType: availability.roomTypes.map((av, i) => {
+      const data = plansPerType[i]
+      const isArray = Array.isArray(data)
+      return {
+        roomTypeId: av.roomTypeId,
+        roomTypeName: av.name,
+        isMulti: isMultiRoomWithGuests,
+        plansData: isArray
+          ? (data as Awaited<ReturnType<typeof getPublicRatesWithPlans>>[]).map((d, occ) => ({
+              occupancy: occ + 1,
+              plansCount: d?.plans?.length ?? 0,
+              noRatePlanForOccupancy: d?.noRatePlanForOccupancy,
+              nights: d?.nights,
+            }))
+          : {
+              plansCount: (data as Awaited<ReturnType<typeof getPublicRatesWithPlans>>)?.plans?.length ?? 0,
+              noRatePlanForOccupancy: (data as Awaited<ReturnType<typeof getPublicRatesWithPlans>>)?.noRatePlanForOccupancy,
+              nights: (data as Awaited<ReturnType<typeof getPublicRatesWithPlans>>)?.nights,
+            },
+      }
+    }),
+  })
+
   const roomTypesWithRates = availability.roomTypes.map((av, i) => {
     const rt = property.roomTypes.find((r) => r.id === av.roomTypeId)
     const rate = ratesByRoomTypeId.get(av.roomTypeId)
@@ -178,6 +241,8 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
         ...av,
         shortDescription: rt?.shortDescription ?? null,
         averagePricePerNight: rate?.averagePricePerNight ?? rt?.basePrice ?? 0,
+        averageMarketRatePerNight: rate?.averageMarketRatePerNight,
+        totalMarketAmount: rate?.totalMarketAmount,
         plans: [] as PublicRatesWithPlansPlan[],
         nightsForPlans: data1?.nights ?? nights,
         noRatePlanForOccupancy: false,
@@ -202,6 +267,8 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
       ...av,
       shortDescription: rt?.shortDescription ?? null,
       averagePricePerNight: rate?.averagePricePerNight ?? rt?.basePrice ?? 0,
+      averageMarketRatePerNight: rate?.averageMarketRatePerNight,
+      totalMarketAmount: rate?.totalMarketAmount,
       plans: (single?.plans ?? []) as PublicRatesWithPlansPlan[],
       nightsForPlans: single?.nights ?? nights,
       noRatePlanForOccupancy: single?.noRatePlanForOccupancy ?? false,
@@ -226,6 +293,23 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
         ? `${guestsPerRoom} guest${guestsPerRoom !== 1 ? 's' : ''} per room (${occupancy} total)`
         : `${occupancy} guest${occupancy !== 1 ? 's' : ''}`
       : null
+
+  // Only show room types that have at least the requested number of rooms available
+  const roomTypesAvailableForRequest = roomTypesWithRates.filter(
+    (room) => room.availableRooms >= rooms && room.availableRooms > 0
+  )
+
+  // Minimum total for stay summary (cheapest plan × allowed room count across all room types)
+  let minTotal: number | null = null
+  for (const room of roomTypesAvailableForRequest) {
+    const maxRooms = Math.min(rooms, Math.max(0, room.availableRooms))
+    if (maxRooms <= 0) continue
+    const plans = (room.plans ?? room.plansForOccupancy1 ?? []) as PublicRatesWithPlansPlan[]
+    for (const plan of plans) {
+      const total = Math.round(plan.totalAmount * maxRooms * 100) / 100
+      if (minTotal === null || total < minTotal) minTotal = total
+    }
+  }
 
   return (
     <main className="bg-background text-foreground">
@@ -310,7 +394,7 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
               </Link>
             </div>
             <div className="space-y-5">
-              {roomTypesWithRates.map((room) => (
+              {roomTypesAvailableForRequest.map((room) => (
                 <RoomCard
                   key={room.roomTypeId}
                   slug={slug}
@@ -325,6 +409,8 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
                   availableRooms={room.availableRooms}
                   nights={nights}
                   averagePricePerNight={room.averagePricePerNight}
+                  averageMarketRatePerNight={room.averageMarketRatePerNight}
+                  totalMarketAmount={room.totalMarketAmount}
                   plans={room.plans}
                   nightsForPlans={room.nightsForPlans}
                   noRatePlanForOccupancy={room.noRatePlanForOccupancy}
@@ -342,6 +428,30 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
                   nightsForPlans4={room.nightsForPlans4}
                 />
               ))}
+
+              {roomTypesAvailableForRequest.length === 0 && roomTypesWithRates.length > 0 && (
+                <div className="rounded-[2rem] border border-amber-300/60 bg-amber-50/80 p-6 shadow-[0_18px_45px_rgba(8,17,31,0.04)] dark:border-amber-700/40 dark:bg-amber-950/25 sm:p-7">
+                  <div className="text-[11px] uppercase tracking-[0.24em] text-amber-800 dark:text-amber-200">
+                    Not enough rooms for your search
+                  </div>
+                  <p className="mt-3 text-sm leading-7 text-amber-900 dark:text-amber-300">
+                    No room type has {rooms} room{rooms !== 1 ? 's' : ''} available for these dates.
+                    Try different dates or search for fewer rooms.
+                  </p>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <Button href={`/book/${slug}`} variant="outline" color="slate" className="dark:text-white">
+                      Change dates or rooms
+                    </Button>
+                    <Link
+                      href={`/hotels/${slug}`}
+                      className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Back to property
+                    </Link>
+                  </div>
+                </div>
+              )}
 
               {roomTypesWithRates.length === 0 && (
                 <div className="rounded-[2rem] border border-border/60 bg-card/70 p-6 shadow-[0_18px_45px_rgba(8,17,31,0.04)] dark:bg-card/50 sm:p-7">
@@ -385,6 +495,12 @@ export default async function BookRoomsPage({ params, searchParams }: Props) {
                   value={`${rooms} room${rooms !== 1 ? 's' : ''}`}
                 />
                 {guestSummary && <SummaryRow label="Guests" value={guestSummary} />}
+                {minTotal != null && (
+                  <SummaryRow
+                    label="Total"
+                    value={`₹${formatPrice(minTotal)}`}
+                  />
+                )}
               </div>
 
               <div className="mt-6 flex flex-col gap-3 border-t border-border/60 pt-6">

@@ -15,7 +15,7 @@ import {
 
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/Button'
-import { PriceWithTax } from '@/components/PriceWithTax'
+import { PriceWithMarketRate } from '@/components/PriceWithMarketRate'
 import type { PublicRatesWithPlansPlan } from '@/lib/api'
 import type { ShareCombination } from './shareCombinations'
 
@@ -41,6 +41,8 @@ type RoomCardProps = {
   availableRooms: number
   nights: number
   averagePricePerNight: number
+  averageMarketRatePerNight?: number
+  totalMarketAmount?: number
   plans?: PublicRatesWithPlansPlan[]
   nightsForPlans?: number
   noRatePlanForOccupancy?: boolean
@@ -85,6 +87,8 @@ export function RoomCard({
   availableRooms,
   nights,
   averagePricePerNight,
+  averageMarketRatePerNight,
+  totalMarketAmount,
   plans = [],
   nightsForPlans = nights,
   noRatePlanForOccupancy = false,
@@ -238,6 +242,10 @@ export function RoomCard({
     occupancyOverride?: number
   ) => {
     const totalAmount = Math.round(plan.totalAmount * numRooms * 100) / 100
+    const marketTotal =
+      plan.marketTotalAmount != null
+        ? Math.round(plan.marketTotalAmount * numRooms * 100) / 100
+        : undefined
     const nightsVal =
       occupancyOverride === 2
         ? nightsForPlans2
@@ -256,6 +264,9 @@ export function RoomCard({
       ratePlan: plan.plan,
       ratePlanLabel: plan.label,
     })
+    if (marketTotal != null && marketTotal > totalAmount) {
+      p.set('marketTotal', String(marketTotal))
+    }
 
     const occ =
       occupancyOverride ?? (occupancyParam ? parseInt(occupancyParam, 10) : undefined)
@@ -462,7 +473,13 @@ export function RoomCard({
                                               {plan.label}
                                             </p>
                                             <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                                              <PriceWithTax amount={plan.averagePricePerNight} suffix={`/night · ${nightsOcc} night${nightsOcc !== 1 ? 's' : ''}`} size="sm" />
+                                              <PriceWithMarketRate
+                                                amount={plan.averagePricePerNight}
+                                                marketAmount={plan.averageMarketRatePerNight}
+                                                suffix={`/night · ${nightsOcc} night${nightsOcc !== 1 ? 's' : ''}`}
+                                                size="sm"
+                                                showTaxBreakup={true}
+                                              />
                                             </p>
                                           </div>
 
@@ -475,10 +492,15 @@ export function RoomCard({
 
                                         <div className="mt-4 flex items-center justify-between gap-4">
                                           <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                                            Per room
+                                            Per rooms
                                           </span>
                                           <span className="text-lg font-semibold text-foreground">
-                                            <PriceWithTax amount={plan.totalAmount} size="lg" />
+                                            <PriceWithMarketRate
+                                              amount={plan.totalAmount}
+                                              marketAmount={plan.marketTotalAmount}
+                                              size="lg"
+                                              showTaxBreakup={true}
+                                            />
                                           </span>
                                         </div>
                                       </button>
@@ -501,13 +523,20 @@ export function RoomCard({
                               Total
                             </div>
                             <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-                              <PriceWithTax
+                              <PriceWithMarketRate
                                 amount={occupanciesInCombination.reduce((sum, occ) => {
                                   const plan = selectedPlanByOcc[occ]
                                   const numRooms = selectedCombination!.breakdown[occ]
                                   return sum + (plan ? plan.totalAmount * numRooms : 0)
                                 }, 0)}
+                                marketAmount={occupanciesInCombination.reduce((sum, occ) => {
+                                  const plan = selectedPlanByOcc[occ]
+                                  const numRooms = selectedCombination!.breakdown[occ]
+                                  const m = plan?.marketTotalAmount ?? plan?.totalAmount
+                                  return sum + (plan && m != null ? m * numRooms : 0)
+                                }, 0)}
                                 size="2xl"
+                                showTaxBreakup={true}
                               />
                             </p>
                           </div>
@@ -523,6 +552,7 @@ export function RoomCard({
                               }> = []
 
                               let totalAmount = 0
+                              let totalMarketAmount = 0
 
                               for (const occ of occupanciesInCombination) {
                                 const plan = selectedPlanByOcc[occ]
@@ -543,6 +573,9 @@ export function RoomCard({
                                 }
 
                                 totalAmount += plan.totalAmount * numRooms
+                                if (plan.marketTotalAmount != null) {
+                                  totalMarketAmount += plan.marketTotalAmount * numRooms
+                                }
                               }
 
                               const payload = {
@@ -554,6 +587,10 @@ export function RoomCard({
                                 roomTypeName: name,
                                 roomLines,
                                 totalAmount: Math.round(totalAmount * 100) / 100,
+                                marketTotal:
+                                  totalMarketAmount > 0
+                                    ? Math.round(totalMarketAmount * 100) / 100
+                                    : undefined,
                               }
 
                               if (typeof window !== 'undefined') {
@@ -626,9 +663,21 @@ export function RoomCard({
                           </p>
 
                           <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                            <PriceWithTax amount={plan.averagePricePerNight} suffix="/night" size="sm" /> ·{' '}
+                            <PriceWithMarketRate
+                              amount={plan.averagePricePerNight}
+                              marketAmount={plan.averageMarketRatePerNight}
+                              suffix="/night"
+                              size="sm"
+                              showTaxBreakup={true}
+                            /> ·{' '}
                             {nightsForPlans} night{nightsForPlans !== 1 ? 's' : ''} ·{' '}
-                            <PriceWithTax amount={plan.totalAmount} suffix=" per room" size="sm" />
+                            <PriceWithMarketRate
+                              amount={plan.totalAmount}
+                              marketAmount={plan.marketTotalAmount}
+                              suffix=" per room"
+                              size="sm"
+                              showTaxBreakup={true}
+                            />
                           </p>
                         </div>
 
@@ -637,7 +686,16 @@ export function RoomCard({
                             Selected total
                           </div>
                           <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-                            <PriceWithTax amount={totalForSelection} size="2xl" />
+                            <PriceWithMarketRate
+                              amount={totalForSelection}
+                              marketAmount={
+                                plan.marketTotalAmount != null
+                                  ? Math.round(plan.marketTotalAmount * numRoomsSelected * 100) / 100
+                                  : undefined
+                              }
+                              size="2xl"
+                              showTaxBreakup={true}
+                            />
                           </div>
                         </div>
                       </div>

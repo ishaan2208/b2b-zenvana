@@ -7,7 +7,7 @@ const footerNav = {
   stay: [
     { href: '/hotels', label: 'Hotels' },
     { href: '/offers', label: 'Offers' },
-    { href: '/destinations', label: 'Destinations' },
+    { href: '/restaurant', label: 'Restaurant' },
   ],
   company: [
     { href: '/about', label: 'About' },
@@ -22,7 +22,9 @@ export function Footer() {
       <div className="container-shell">
         <div className="grid gap-10 py-12 sm:py-14 lg:grid-cols-[1.2fr_0.8fr_0.8fr_1fr]">
           <div className="max-w-md">
-            <Logo className="h-12 w-auto" />
+            <Link href="/" aria-label="Zenvana – Home" className="inline-block">
+              <Logo className="h-12 w-auto sm:h-14" />
+            </Link>
             <p className="mt-5 body-copy">
               Zenvana is a Dehradun-rooted hospitality brand shaped by hills,
               long mornings, calmer stays, and direct-booking ease.

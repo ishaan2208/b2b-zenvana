@@ -13,7 +13,7 @@ import {
 
 import { getPublicPropertyBySlug } from '@/lib/api'
 import { Container } from '@/components/Container'
-import { PriceWithTax } from '@/components/PriceWithTax'
+import { PriceWithMarketRate } from '@/components/PriceWithMarketRate'
 import CheckoutForm from './CheckoutForm'
 import MultiRoomCheckoutForm from './MultiRoomCheckoutForm'
 import { BackToRoomsLink } from './BackToRoomsLink'
@@ -28,6 +28,7 @@ type Props = {
     roomTypeName?: string
     nights?: string
     totalAmount?: string
+    marketTotal?: string
     numRooms?: string
     ratePlan?: string
     ratePlanLabel?: string
@@ -165,6 +166,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
   const roomTypeName = q.roomTypeName!
   const nights = q.nights!
   const totalAmount = q.totalAmount!
+  const marketTotal = q.marketTotal ? parseFloat(q.marketTotal) : undefined
   const numRooms = q.numRooms ? parseInt(q.numRooms, 10) : 1
   const occupancy = q.occupancy ? parseInt(q.occupancy, 10) : undefined
 
@@ -205,7 +207,15 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
                 />
                 <SummaryChip
                   icon={<Receipt className="h-4 w-4" />}
-                  text={<PriceWithTax amount={Number(totalAmount)} size="sm" inline showTaxBreakup={false} />}
+                  text={
+                    <PriceWithMarketRate
+                      amount={Number(totalAmount)}
+                      marketAmount={marketTotal}
+                      size="sm"
+                      inline
+                      showTaxBreakup={false}
+                    />
+                  }
                 />
                 {occupancy != null && (
                   <SummaryChip
@@ -252,7 +262,12 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
                     Total
                   </span>
                   <span className="text-lg font-semibold tracking-tight text-foreground">
-                    <PriceWithTax amount={Number(totalAmount)} size="lg" showTaxBreakup={false} />
+                    <PriceWithMarketRate
+                      amount={Number(totalAmount)}
+                      marketAmount={marketTotal}
+                      size="lg"
+                      showTaxBreakup={false}
+                    />
                   </span>
                 </div>
               </div>
@@ -291,6 +306,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
               roomTypeName={roomTypeName}
               nights={nights}
               totalAmount={totalAmount}
+              marketTotal={marketTotal}
               numRooms={numRooms}
               ratePlan={q.ratePlan}
               occupancy={occupancy}
@@ -337,7 +353,12 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
                   Total
                 </div>
                 <div className="mt-2 text-xl font-semibold tracking-tight text-foreground">
-                  <PriceWithTax amount={Number(totalAmount)} size="xl" showTaxBreakup={false} />
+                  <PriceWithMarketRate
+                    amount={Number(totalAmount)}
+                    marketAmount={marketTotal}
+                    size="xl"
+                    showTaxBreakup={false}
+                  />
                 </div>
               </div>
 
