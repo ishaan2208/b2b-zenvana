@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
-import type { DateRange } from 'react-day-picker'
 import { Button } from '@/components/Button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -13,9 +12,10 @@ import {
 } from '@/components/ui/popover'
 import {
   CalendarCheck,
+  LogIn,
+  LogOut,
   Minus,
   Plus,
-  CalendarDays,
 } from 'lucide-react'
 
 const MAX_GUESTS_PER_ROOM = 3
@@ -31,18 +31,36 @@ function addDays(date: Date, days: number): Date {
   return out
 }
 
+function startOfDay(d: Date): Date {
+  const out = new Date(d)
+  out.setHours(0, 0, 0, 0)
+  return out
+}
+
 type BookSearchFormProps = { slug: string }
+
+const calendarClassNames = {
+  months: 'flex flex-col gap-4',
+  month: 'flex flex-col gap-4',
+  caption: 'flex justify-center pt-1',
+  nav: 'flex gap-1',
+  table: 'w-full border-collapse',
+  head_row: 'flex',
+  head_cell: 'rounded-md w-9 font-normal text-[0.8rem] text-muted-foreground',
+  row: 'flex w-full mt-2',
+  cell: 'relative p-0 text-center text-sm focus-within:relative',
+  day: 'h-9 w-9 p-0 font-normal hover:bg-accent hover:text-accent-foreground rounded-md',
+}
 
 export function BookSearchForm({ slug }: BookSearchFormProps) {
   const router = useRouter()
-  const today = useMemo(() => new Date(), [])
+  const today = useMemo(() => startOfDay(new Date()), [])
   const tomorrow = useMemo(() => addDays(today, 1), [today])
 
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: today,
-    to: tomorrow,
-  })
-  const [datePickerOpen, setDatePickerOpen] = useState(false)
+  const [checkIn, setCheckIn] = useState<Date | undefined>(today)
+  const [checkOut, setCheckOut] = useState<Date | undefined>(tomorrow)
+  const [checkInOpen, setCheckInOpen] = useState(false)
+  const [checkOutOpen, setCheckOutOpen] = useState(false)
 
   const [rooms, setRooms] = useState(1)
   const [guests, setGuests] = useState(2)
@@ -76,23 +94,32 @@ export function BookSearchForm({ slug }: BookSearchFormProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rooms, useGuestsPerRoomMode])
 
-  const isCheckOutValid = dateRange?.from && dateRange?.to && dateRange.to > dateRange.from
+  const checkOutMin = checkIn ? addDays(checkIn, 1) : tomorrow
+  const isCheckOutValid =
+    checkIn != null && checkOut != null && startOfDay(checkOut) > startOfDay(checkIn)
 
-  const handleRangeSelect = (range: DateRange | undefined) => {
-    if (!range) return
-    setDateRange(range)
-    if (range.from && range.to) {
-      setDatePickerOpen(false)
+  const handleCheckInSelect = (date: Date | undefined) => {
+    setCheckIn(date ?? undefined)
+    if (date) {
+      setCheckInOpen(false)
+      if (checkOut && startOfDay(checkOut) <= startOfDay(date)) {
+        setCheckOut(addDays(date, 1))
+      }
     }
+  }
+
+  const handleCheckOutSelect = (date: Date | undefined) => {
+    setCheckOut(date ?? undefined)
+    if (date) setCheckOutOpen(false)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!isCheckOutValid || !dateRange?.from || !dateRange?.to) return
+    if (!isCheckOutValid || !checkIn || !checkOut) return
 
     const params = new URLSearchParams({
-      checkIn: toDateString(dateRange.from),
-      checkOut: toDateString(dateRange.to),
+      checkIn: toDateString(checkIn),
+      checkOut: toDateString(checkOut),
       rooms: String(rooms),
       guests: String(totalGuests),
     })
@@ -103,18 +130,6 @@ export function BookSearchForm({ slug }: BookSearchFormProps) {
 
     router.push(`/book/${slug}/rooms?${params}`)
   }
-
-  const dateRangeLabel = dateRange?.from ? (
-    dateRange.to ? (
-      <>
-        {format(dateRange.from, 'MMM d, yyyy')} – {format(dateRange.to, 'MMM d, yyyy')}
-      </>
-    ) : (
-      format(dateRange.from, 'MMM d, yyyy')
-    )
-  ) : (
-    <span className="text-muted-foreground">Pick your dates</span>
-  )
 
   return (
     <form
@@ -129,16 +144,20 @@ export function BookSearchForm({ slug }: BookSearchFormProps) {
 
       <div className="px-5 py-5 sm:px-6 sm:py-6">
         <div className="flex flex-col gap-6">
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr]">
-            <Field label="Dates" className="sm:col-span-2 lg:col-span-1">
-              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr]">
+            <Field label="Check-in">
+              <Popover open={checkInOpen} onOpenChange={setCheckInOpen}>
                 <PopoverTrigger asChild>
                   <button
                     type="button"
                     className="flex h-14 w-full items-center gap-3 rounded-[1.1rem] border border-border/70 bg-background/70 px-4 text-left text-foreground shadow-none outline-none transition-colors hover:bg-background/90 focus:border-primary focus:ring-2 focus:ring-primary/15 dark:bg-background/50 dark:hover:bg-background/70"
                   >
-                    <CalendarDays className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    <span>{dateRangeLabel}</span>
+                    <LogIn className="h-5 w-5 shrink-0 text-muted-foreground" />
+                    <span>
+                      {checkIn ? format(checkIn, 'MMM d, yyyy') : (
+                        <span className="text-muted-foreground">Select date</span>
+                      )}
+                    </span>
                   </button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -149,30 +168,52 @@ export function BookSearchForm({ slug }: BookSearchFormProps) {
                   collisionPadding={16}
                 >
                   <Calendar
-                    mode="range"
-                    defaultMonth={dateRange?.from ?? today}
-                    selected={dateRange}
-                    onSelect={handleRangeSelect}
-                    numberOfMonths={2}
-                    disabled={(date) => date < today}
-                    classNames={{
-                      months: 'flex flex-col sm:flex-row gap-4',
-                      month: 'flex flex-col gap-4',
-                      caption: 'flex justify-center pt-1',
-                      nav: 'flex gap-1',
-                      table: 'w-full border-collapse',
-                      head_row: 'flex',
-                      head_cell: 'rounded-md w-9 font-normal text-[0.8rem] text-muted-foreground',
-                      row: 'flex w-full mt-2',
-                      cell: 'relative p-0 text-center text-sm focus-within:relative',
-                      day: 'h-9 w-9 p-0 font-normal hover:bg-accent hover:text-accent-foreground rounded-md',
-                    }}
+                    mode="single"
+                    defaultMonth={checkIn ?? today}
+                    selected={checkIn}
+                    onSelect={handleCheckInSelect}
+                    disabled={(date) => startOfDay(date) < today}
+                    classNames={calendarClassNames}
                   />
                 </PopoverContent>
               </Popover>
-              {!isCheckOutValid && dateRange?.from && (
+            </Field>
+
+            <Field label="Check-out">
+              <Popover open={checkOutOpen} onOpenChange={setCheckOutOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-14 w-full items-center gap-3 rounded-[1.1rem] border border-border/70 bg-background/70 px-4 text-left text-foreground shadow-none outline-none transition-colors hover:bg-background/90 focus:border-primary focus:ring-2 focus:ring-primary/15 dark:bg-background/50 dark:hover:bg-background/70"
+                  >
+                    <LogOut className="h-5 w-5 shrink-0 text-muted-foreground" />
+                    <span>
+                      {checkOut ? format(checkOut, 'MMM d, yyyy') : (
+                        <span className="text-muted-foreground">Select date</span>
+                      )}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-auto p-0"
+                  align="start"
+                  side="bottom"
+                  sideOffset={8}
+                  collisionPadding={16}
+                >
+                  <Calendar
+                    mode="single"
+                    defaultMonth={checkOut ?? checkOutMin}
+                    selected={checkOut}
+                    onSelect={handleCheckOutSelect}
+                    disabled={(date) => startOfDay(date) < startOfDay(checkOutMin)}
+                    classNames={calendarClassNames}
+                  />
+                </PopoverContent>
+              </Popover>
+              {!isCheckOutValid && checkIn && checkOut && (
                 <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-                  Select check-out date after check-in
+                  Check-out must be after check-in
                 </p>
               )}
             </Field>
