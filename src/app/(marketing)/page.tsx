@@ -352,7 +352,16 @@ function EventsSection() {
 }
 
 function GallerySection() {
-  const tiles = Array.from({ length: 8 }, (_, i) => i + 1)
+  const galleryImages = [
+    '/images/dehradun/Rosewood.png',
+    '/images/dehradun/silkwood .png',
+    '/images/dehradun/MonteVerde.png',
+    '/images/dehradun/Lucury room 1.png',
+    '/images/dehradun/cherrwood building pic 1.png',
+    '/images/dehradun/SILVER W BUILDING PIC.png',
+    '/images/dehradun/feasta.png',
+    '/images/dehradun/restaurantImage.png',
+  ]
 
   return (
     <section className="section-rule">
@@ -374,15 +383,18 @@ function GallerySection() {
         </div>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {tiles.map((n) => (
+          {galleryImages.map((src, idx) => (
             <div
-              key={n}
+              key={`${src}-${idx}`}
               className="group relative aspect-[4/3] overflow-hidden rounded-[1.6rem] bg-muted"
             >
+              <Image
+                src={src}
+                alt="best hotels in dehradun"
+                fill
+                className="object-cover transition duration-300 group-hover:scale-[1.03]"
+              />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(0,0,0,0.18),transparent_60%),linear-gradient(to_bottom,_rgba(0,0,0,0.06),rgba(0,0,0,0.1))] transition duration-300 group-hover:opacity-80" />
-              <div className="absolute inset-0 grid place-items-center text-xs font-medium uppercase tracking-[0.22em] text-foreground/55 transition duration-300 group-hover:scale-[1.03]">
-                Image {n}
-              </div>
             </div>
           ))}
         </div>
@@ -395,18 +407,28 @@ function TestimonialsSection() {
   const testimonials = [
     {
       name: 'Guest review',
-      text: 'A calm stay with thoughtful details — everything felt easy and well-considered.',
+      text: 'Spacious rooms, polite staff, and smooth check-in made this one of our best dehradun stay experiences.',
       stars: 5,
+      imageSrc: '/images/dehradun/istockphoto-2194433569-612x612.jpg',
     },
     {
       name: 'Guest review',
-      text: 'Beautiful atmosphere, clean rooms, and a smooth booking experience from start to finish.',
+      text: 'The ambience was elegant, the property was very clean, and service quality felt truly best dehradun level.',
       stars: 5,
+      imageSrc:
+        '/images/dehradun/cheerful-indian-businessman-smiling-closeup-portrait-jobs-career-campaign_53876-129417.avif',
     },
     {
       name: 'Guest review',
-      text: 'Great for families — practical comfort and a quieter, boutique feeling throughout.',
+      text: 'Perfect for families and couples, with comfort, location, and hospitality that match a best dehradun hotel.',
       stars: 4,
+      imageSrc: '/images/dehradun/istockphoto-613557584-612x612.jpg',
+    },
+    {
+      name: 'Guest review',
+      text: 'Excellent location and warm support throughout the trip, making it easy to recommend for best dehradun stays.',
+      stars: 5,
+      imageSrc: '/images/dehradun/ultra-realistic-indian-ai-girl-600nw-2735385401.webp',
     },
   ]
 
@@ -430,7 +452,14 @@ function TestimonialsSection() {
               className="quiet-card min-w-[280px] max-w-[360px] flex-1 snap-start p-6 sm:min-w-[340px]"
             >
               <div className="flex items-center gap-3">
-                <div className="h-11 w-11 rounded-full bg-muted" />
+                <div className="relative h-11 w-11 overflow-hidden rounded-full bg-muted">
+                  <Image
+                    src={t.imageSrc}
+                    alt="best hotels in dehradun"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
                 <div>
                   <div className="text-sm font-semibold text-foreground">{t.name}</div>
                   <div className="mt-1 flex items-center gap-1 text-amber-500">
