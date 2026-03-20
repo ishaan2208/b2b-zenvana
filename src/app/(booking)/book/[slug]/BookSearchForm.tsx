@@ -17,7 +17,6 @@ import {
 } from 'lucide-react'
 
 import { Button } from '@/components/Button'
-import { Badge } from '@/components/ui/badge'
 import { Calendar } from '@/components/ui/calendar'
 import {
   Popover,
@@ -71,8 +70,7 @@ const calendarClassNames = {
   nav_button_next: 'absolute right-1',
   table: 'w-full border-collapse',
   head_row: 'flex',
-  head_cell:
-    'w-9 rounded-md text-[0.78rem] font-normal text-muted-foreground',
+  head_cell: 'w-9 rounded-md text-[0.78rem] font-normal text-muted-foreground',
   row: 'mt-2 flex w-full',
   cell: 'relative p-0 text-center text-sm focus-within:relative',
   day: 'h-9 w-9 rounded-md p-0 font-normal text-foreground transition hover:bg-accent hover:text-accent-foreground aria-selected:bg-primary aria-selected:text-primary-foreground aria-selected:hover:bg-primary aria-selected:hover:text-primary-foreground',
@@ -104,6 +102,7 @@ export function BookSearchForm({
 
   const useGuestsPerRoomMode = rooms >= ROOMS_FOR_GUESTS_PER_ROOM_MODE
   const totalGuests = useGuestsPerRoomMode ? rooms * guests : guests
+
   const nights =
     checkIn && checkOut && startOfDay(checkOut) > startOfDay(checkIn)
       ? differenceInCalendarDays(startOfDay(checkOut), startOfDay(checkIn))
@@ -174,8 +173,9 @@ export function BookSearchForm({
     }
 
     setIsLoading(true)
+
     try {
-      await router.push(`/book/${slug}/rooms?${params}`)
+      router.push(`/book/${slug}/rooms?${params.toString()}`)
     } catch {
       setIsLoading(false)
     }
@@ -184,41 +184,41 @@ export function BookSearchForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="overflow-hidden rounded-[2rem] border border-border/60 bg-background/60 text-card-foreground shadow-[0_28px_80px_rgba(8,17,31,0.10)] backdrop-blur-2xl dark:bg-background/30"
+      className="w-full max-w-full overflow-hidden rounded-[1.5rem] border border-border/60 bg-background/60 text-card-foreground shadow-[0_28px_80px_rgba(8,17,31,0.10)] backdrop-blur-2xl sm:rounded-[2rem] dark:bg-background/30"
     >
-      <div className="border-b border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),transparent)] px-5 py-5 sm:px-6 sm:py-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-xs">
+      <div className="border-b border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),transparent)] px-4 py-5 sm:px-6 sm:py-6">
+        <div className="min-w-0 max-w-sm">
+          <h2 className="font-serif text-2xl tracking-[-0.04em] text-foreground">
+            Select dates and occupancy
+          </h2>
 
+          <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            {propertyName
+              ? `Choose your stay details for ${propertyName}.`
+              : 'Choose your stay details to see available room types and plans.'}
+          </p>
 
-            <h2 className="mt-4 font-serif text-2xl tracking-[-0.04em] text-foreground">
-              Select dates and occupancy
-            </h2>
-
-            <p className="mt-2 text-sm leading-7 text-muted-foreground">
-              {propertyName
-                ? `Choose your stay details for ${propertyName}.`
-                : 'Choose your stay details to see available room types and plans.'}
+          {location ? (
+            <p className="mt-1 hidden text-xs leading-6 text-muted-foreground sm:block">
+              {location}
             </p>
-          </div>
-
-
+          ) : null}
         </div>
       </div>
 
-      <div className="space-y-6 px-5 py-5 sm:px-6 sm:py-6">
-        <section className="rounded-[1.6rem] border border-border/60 bg-background/72 p-4 backdrop-blur-xl dark:bg-background/35 sm:p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div>
+      <div className="space-y-5 px-4 py-5 sm:space-y-6 sm:px-6 sm:py-6">
+        <section className="overflow-hidden rounded-[1.35rem] border border-border/60 bg-background/72 p-4 backdrop-blur-xl sm:rounded-[1.6rem] sm:p-5 dark:bg-background/35">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
               <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
                 Stay dates
               </div>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Pick check-in and check-out first. The next step will show room types and plans for these dates.
+                Pick check-in and check-out first. The next step will show room types and plans.
               </p>
             </div>
 
-            <div className="hidden rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-xs font-medium text-foreground sm:block dark:bg-background/40">
+            <div className="self-start rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-xs font-medium text-foreground dark:bg-background/40">
               {nights > 0 ? `${nights} night${nights === 1 ? '' : 's'}` : 'Choose dates'}
             </div>
           </div>
@@ -229,10 +229,10 @@ export function BookSearchForm({
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex min-h-[4.5rem] w-full items-center gap-3 rounded-[1.25rem] border border-border/70 bg-background/80 px-4 text-left text-foreground shadow-none outline-none transition hover:bg-background focus:border-primary focus:ring-2 focus:ring-primary/15 dark:bg-background/40"
+                    className="flex min-h-[4.25rem] w-full min-w-0 items-center gap-3 rounded-[1.15rem] border border-border/70 bg-background/80 px-4 text-left text-foreground shadow-none outline-none transition hover:bg-background focus:border-primary focus:ring-2 focus:ring-primary/15 dark:bg-background/40"
                   >
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background/90 dark:bg-background/45">
-                      <LogIn className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background/90 dark:bg-background/45">
+                      <LogIn className="h-4 w-4 text-muted-foreground" />
                     </div>
 
                     <div className="min-w-0">
@@ -247,11 +247,11 @@ export function BookSearchForm({
                 </PopoverTrigger>
 
                 <PopoverContent
-                  className="w-[calc(100vw-2rem)] max-w-[23rem] rounded-[1.5rem] border border-border/60 bg-popover/95 p-3 shadow-[0_24px_60px_rgba(8,17,31,0.16)] backdrop-blur-2xl"
+                  className="w-[calc(100vw-1rem)] max-w-[23rem] rounded-[1.35rem] border border-border/60 bg-popover/95 p-2.5 shadow-[0_24px_60px_rgba(8,17,31,0.16)] backdrop-blur-2xl sm:rounded-[1.5rem] sm:p-3"
                   align="start"
                   side="bottom"
                   sideOffset={10}
-                  collisionPadding={16}
+                  collisionPadding={8}
                 >
                   <Calendar
                     mode="single"
@@ -259,7 +259,7 @@ export function BookSearchForm({
                     selected={checkIn}
                     onSelect={handleCheckInSelect}
                     disabled={(date) => startOfDay(date) < today}
-                    className="rounded-[1.25rem]"
+                    className="rounded-[1.1rem]"
                     classNames={calendarClassNames}
                   />
                 </PopoverContent>
@@ -271,10 +271,10 @@ export function BookSearchForm({
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex min-h-[4.5rem] w-full items-center gap-3 rounded-[1.25rem] border border-border/70 bg-background/80 px-4 text-left text-foreground shadow-none outline-none transition hover:bg-background focus:border-primary focus:ring-2 focus:ring-primary/15 dark:bg-background/40"
+                    className="flex min-h-[4.25rem] w-full min-w-0 items-center gap-3 rounded-[1.15rem] border border-border/70 bg-background/80 px-4 text-left text-foreground shadow-none outline-none transition hover:bg-background focus:border-primary focus:ring-2 focus:ring-primary/15 dark:bg-background/40"
                   >
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background/90 dark:bg-background/45">
-                      <LogOut className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background/90 dark:bg-background/45">
+                      <LogOut className="h-4 w-4 text-muted-foreground" />
                     </div>
 
                     <div className="min-w-0">
@@ -289,11 +289,11 @@ export function BookSearchForm({
                 </PopoverTrigger>
 
                 <PopoverContent
-                  className="w-[calc(100vw-2rem)] max-w-[23rem] rounded-[1.5rem] border border-border/60 bg-popover/95 p-3 shadow-[0_24px_60px_rgba(8,17,31,0.16)] backdrop-blur-2xl"
+                  className="w-[calc(100vw-1rem)] max-w-[23rem] rounded-[1.35rem] border border-border/60 bg-popover/95 p-2.5 shadow-[0_24px_60px_rgba(8,17,31,0.16)] backdrop-blur-2xl sm:rounded-[1.5rem] sm:p-3"
                   align="start"
                   side="bottom"
                   sideOffset={10}
-                  collisionPadding={16}
+                  collisionPadding={8}
                 >
                   <Calendar
                     mode="single"
@@ -301,32 +301,33 @@ export function BookSearchForm({
                     selected={checkOut}
                     onSelect={handleCheckOutSelect}
                     disabled={(date) => startOfDay(date) < startOfDay(checkOutMin)}
-                    className="rounded-[1.25rem]"
+                    className="rounded-[1.1rem]"
                     classNames={calendarClassNames}
                   />
                 </PopoverContent>
               </Popover>
 
-              {!isCheckOutValid && checkIn && checkOut && (
+              {!isCheckOutValid && checkIn && checkOut ? (
                 <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
                   Check-out must be after check-in.
                 </p>
-              )}
+              ) : null}
             </Field>
           </div>
         </section>
 
-        <section className="rounded-[1.6rem] border border-border/60 bg-background/72 p-4 backdrop-blur-xl dark:bg-background/35 sm:p-5">
+        <section className="overflow-hidden rounded-[1.35rem] border border-border/60 bg-background/72 p-4 backdrop-blur-xl sm:rounded-[1.6rem] sm:p-5 dark:bg-background/35">
           <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
             Occupancy
           </div>
+
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             Set rooms and guests now so the next page shows the right availability and pricing.
           </p>
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <CounterCard
-              icon={<BedDouble className="h-4.5 w-4.5" />}
+              icon={<BedDouble className="h-4 w-4" />}
               label="Rooms"
               hint="How many rooms do you need?"
               value={rooms}
@@ -339,7 +340,7 @@ export function BookSearchForm({
             />
 
             <CounterCard
-              icon={<Users className="h-4.5 w-4.5" />}
+              icon={<Users className="h-4 w-4" />}
               label={useGuestsPerRoomMode ? 'Guests per room' : 'Guests'}
               hint={
                 useGuestsPerRoomMode
@@ -364,8 +365,8 @@ export function BookSearchForm({
           </div>
         </section>
 
-        <section className="rounded-[1.6rem] border border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.03))] p-4 backdrop-blur-2xl dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))]">
-          <div className="flex flex-wrap items-center gap-2">
+        <section className="overflow-hidden rounded-[1.35rem] border border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.03))] p-4 backdrop-blur-2xl sm:rounded-[1.6rem] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))]">
+          <div className="flex flex-wrap gap-2">
             <SummaryPill
               icon={<MoonStar className="h-3.5 w-3.5" />}
               text={
@@ -397,7 +398,7 @@ export function BookSearchForm({
           <Button
             type="submit"
             color="blue"
-            className="h-14 w-full rounded-[1.2rem] text-sm font-medium shadow-[0_14px_34px_rgba(37,99,235,0.22)]"
+            className="h-14 w-full rounded-[1.15rem] text-sm font-medium shadow-[0_14px_34px_rgba(37,99,235,0.22)]"
             disabled={!isCheckOutValid || isLoading}
           >
             {isLoading ? (
@@ -408,7 +409,7 @@ export function BookSearchForm({
             {isLoading ? 'Loading rooms…' : 'See rooms & rates'}
           </Button>
 
-          <p className="text-center text-xs leading-6 text-muted-foreground">
+          <p className="px-1 text-center text-xs leading-6 text-muted-foreground">
             Next, we’ll show available room types and plans for your selected dates.
           </p>
         </div>
@@ -425,7 +426,7 @@ function Field({
   children: ReactNode
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <label className="mb-2 block text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
         {label}
       </label>
@@ -463,20 +464,20 @@ function CounterCard({
   const canIncrease = value < max
 
   return (
-    <div className="rounded-[1.45rem] border border-border/60 bg-background/80 p-4 shadow-[0_10px_28px_rgba(8,17,31,0.03)] dark:bg-background/40">
-      <div className="flex items-start justify-between gap-4">
+    <div className="min-w-0 rounded-[1.25rem] border border-border/60 bg-background/80 p-4 shadow-[0_10px_28px_rgba(8,17,31,0.03)] dark:bg-background/40">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/90 text-foreground dark:bg-background/45">
+          <div className="flex min-w-0 items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background/90 text-foreground dark:bg-background/45">
               {icon}
             </span>
-            {label}
+            <span className="truncate">{label}</span>
           </div>
 
           <p className="mt-3 text-sm leading-6 text-muted-foreground">{hint}</p>
         </div>
 
-        <div className="shrink-0 rounded-full border border-border/60 bg-background/90 px-3 py-1.5 text-xs font-medium text-foreground dark:bg-background/45">
+        <div className="inline-flex shrink-0 self-start rounded-full border border-border/60 bg-background/90 px-3 py-1.5 text-xs font-medium text-foreground dark:bg-background/45">
           {valueBadge ?? value}
           {valueBadge ? ` · ${value}` : ''}
         </div>
@@ -511,21 +512,6 @@ function CounterCard({
   )
 }
 
-function InfoPill({
-  icon,
-  text,
-}: {
-  icon: ReactNode
-  text: string
-}) {
-  return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur-xl dark:bg-background/35">
-      {icon}
-      {text}
-    </span>
-  )
-}
-
 function SummaryPill({
   icon,
   text,
@@ -534,9 +520,9 @@ function SummaryPill({
   text: string
 }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/72 px-3 py-1.5 text-xs font-medium text-foreground backdrop-blur-xl dark:bg-background/35">
+    <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-border/70 bg-background/72 px-3 py-1.5 text-xs font-medium text-foreground backdrop-blur-xl dark:bg-background/35">
       {icon}
-      {text}
+      <span className="truncate">{text}</span>
     </span>
   )
 }
