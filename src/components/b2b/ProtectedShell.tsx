@@ -25,16 +25,28 @@ export default function ProtectedShell({ children }: { children: React.ReactNode
 
   useEffect(() => {
     let cancelled = false;
-    b2bMe()
-      .then((me) => {
+
+    async function bootstrapPartner() {
+      try {
+        const me = await b2bMe();
         if (!cancelled) setPartner(me);
-      })
-      .catch(() => {
-        if (!cancelled) router.replace("/login");
-      })
-      .finally(() => {
+      } catch {
+        // Sometimes cookie propagation can lag immediately after login;
+        // retry once before forcing logout redirect.
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        try {
+          const meRetry = await b2bMe();
+          if (!cancelled) setPartner(meRetry);
+        } catch {
+          if (!cancelled) router.replace("/login");
+        }
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    }
+
+    bootstrapPartner();
+
     return () => {
       cancelled = true;
     };

@@ -167,6 +167,7 @@ export async function b2bLogout() {
 export async function b2bMe(): Promise<B2BPartnerMe> {
   const res = await fetch(`${backendBase()}/b2b/auth/me`, {
     credentials: "include",
+    cache: "no-store",
   });
   return parseJson(res);
 }
