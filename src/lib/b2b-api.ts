@@ -5,6 +5,8 @@ export type B2BPartnerMe = {
   email?: string | null;
 };
 
+const B2B_TOKEN_STORAGE_KEY = "b2b_partner_bearer_token";
+
 export type B2BProperty = {
   id: number;
   slug: string;
@@ -146,28 +148,59 @@ async function parseJson(res: Response) {
   return json?.data;
 }
 
+function getStoredBearerToken() {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(B2B_TOKEN_STORAGE_KEY);
+}
+
+function setStoredBearerToken(token?: string | null) {
+  if (typeof window === "undefined") return;
+  if (token) {
+    window.localStorage.setItem(B2B_TOKEN_STORAGE_KEY, token);
+    return;
+  }
+  window.localStorage.removeItem(B2B_TOKEN_STORAGE_KEY);
+}
+
+function withAuthHeaders(headers?: HeadersInit): Headers {
+  const merged = new Headers(headers || {});
+  const token = getStoredBearerToken();
+  if (token && !merged.has("Authorization")) {
+    merged.set("Authorization", `Bearer ${token}`);
+  }
+  return merged;
+}
+
 export async function b2bLogin(code: string, password: string) {
   const res = await fetch(`${backendBase()}/b2b/auth/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: withAuthHeaders({ "Content-Type": "application/json" }),
     credentials: "include",
     body: JSON.stringify({ code, password }),
   });
-  return parseJson(res);
+  const data = await parseJson(res);
+  setStoredBearerToken(data?.token);
+  return data;
 }
 
 export async function b2bLogout() {
-  const res = await fetch(`${backendBase()}/b2b/auth/logout`, {
-    method: "POST",
-    credentials: "include",
-  });
-  return parseJson(res);
+  try {
+    const res = await fetch(`${backendBase()}/b2b/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+      headers: withAuthHeaders(),
+    });
+    return await parseJson(res);
+  } finally {
+    setStoredBearerToken(null);
+  }
 }
 
 export async function b2bMe(): Promise<B2BPartnerMe> {
   const res = await fetch(`${backendBase()}/b2b/auth/me`, {
     credentials: "include",
     cache: "no-store",
+    headers: withAuthHeaders(),
   });
   return parseJson(res);
 }
@@ -175,6 +208,7 @@ export async function b2bMe(): Promise<B2BPartnerMe> {
 export async function b2bProperties(): Promise<B2BProperty[]> {
   const res = await fetch(`${backendBase()}/b2b/properties`, {
     credentials: "include",
+    headers: withAuthHeaders(),
   });
   return parseJson(res);
 }
@@ -189,7 +223,7 @@ export async function b2bRatesInventory(
   if (occupancy) params.set("occupancy", String(occupancy));
   const res = await fetch(
     `${backendBase()}/b2b/properties/${encodeURIComponent(slug)}/rates-inventory?${params.toString()}`,
-    { credentials: "include" }
+    { credentials: "include", headers: withAuthHeaders() }
   );
   return parseJson(res);
 }
@@ -204,7 +238,7 @@ export async function b2bRateSheet(
   if (occupancy) params.set("occupancy", String(occupancy));
   const res = await fetch(
     `${backendBase()}/b2b/properties/${encodeURIComponent(slug)}/rate-sheet?${params.toString()}`,
-    { credentials: "include" }
+    { credentials: "include", headers: withAuthHeaders() }
   );
   return parseJson(res);
 }
@@ -212,7 +246,7 @@ export async function b2bRateSheet(
 export async function createB2BQuote(payload: unknown) {
   const res = await fetch(`${backendBase()}/b2b/quotes`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: withAuthHeaders({ "Content-Type": "application/json" }),
     credentials: "include",
     body: JSON.stringify(payload),
   });
@@ -225,6 +259,7 @@ export async function listB2BQuotes(status?: string) {
   const query = params.toString() ? `?${params.toString()}` : "";
   const res = await fetch(`${backendBase()}/b2b/quotes${query}`, {
     credentials: "include",
+    headers: withAuthHeaders(),
   });
   return parseJson(res);
 }
@@ -232,6 +267,7 @@ export async function listB2BQuotes(status?: string) {
 export async function getB2BQuote(id: string) {
   const res = await fetch(`${backendBase()}/b2b/quotes/${id}`, {
     credentials: "include",
+    headers: withAuthHeaders(),
   });
   return parseJson(res);
 }
@@ -239,7 +275,7 @@ export async function getB2BQuote(id: string) {
 export async function addB2BQuoteComment(id: string, message: string) {
   const res = await fetch(`${backendBase()}/b2b/quotes/${id}/comments`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: withAuthHeaders({ "Content-Type": "application/json" }),
     credentials: "include",
     body: JSON.stringify({ message }),
   });
@@ -249,7 +285,7 @@ export async function addB2BQuoteComment(id: string, message: string) {
 export async function updateB2BQuoteStatus(id: string, status: string, note?: string) {
   const res = await fetch(`${backendBase()}/b2b/quotes/${id}/status`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: withAuthHeaders({ "Content-Type": "application/json" }),
     credentials: "include",
     body: JSON.stringify({ status, note }),
   });
