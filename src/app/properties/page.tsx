@@ -114,17 +114,6 @@ export default function PropertiesPage() {
                     to check availability and compare options.
                   </p>
                 </div>
-
-                {/* {!loading && !error && rows.length > 0 ? (
-                  <div className="shrink-0">
-                    <Badge
-                      variant="outline"
-                      className="rounded-full px-3 py-2 text-xs font-medium"
-                    >
-                      {rows.length} {rows.length === 1 ? "property" : "properties"}
-                    </Badge>
-                  </div>
-                ) : null} */}
               </div>
             </div>
           </motion.div>
@@ -175,25 +164,31 @@ export default function PropertiesPage() {
 
 function PropertyCard({ property }: { property: B2BProperty }) {
   const location = [property.city, property.state].filter(Boolean).join(", ");
+
   const parsedCoordsFromMapUrl = useMemo(
     () => parseCoordsFromGoogleMapUrl(property.googleMapPlaceUrl),
     [property.googleMapPlaceUrl]
   );
+
   const mapLatitude = property.latitude ?? parsedCoordsFromMapUrl?.lat;
   const mapLongitude = property.longitude ?? parsedCoordsFromMapUrl?.lng;
   const hasCoordinates = Number.isFinite(mapLatitude) && Number.isFinite(mapLongitude);
+
   const mapsUrl = property.googleMapPlaceUrl
     ? property.googleMapPlaceUrl
     : hasCoordinates
       ? `https://www.google.com/maps?q=${mapLatitude},${mapLongitude}`
       : null;
+
   const mapEmbedUrl = hasCoordinates
     ? `https://www.google.com/maps?q=${mapLatitude},${mapLongitude}&z=14&output=embed`
     : null;
+
   const propertyImages = useMemo(
     () => normalizeGalleryImages(property.images ?? []),
     [property.images]
   );
+
   const roomTypePhotos = useMemo(
     () =>
       (property.roomTypes ?? []).map((room) => ({
@@ -203,28 +198,35 @@ function PropertyCard({ property }: { property: B2BProperty }) {
       })),
     [property.roomTypes]
   );
+
   const heroFrames = useMemo(() => {
     const roomImages = roomTypePhotos.flatMap((room) => room.images);
     const merged = [...propertyImages, ...roomImages];
     const withHeroFirst = property.heroImageUrl
       ? [{ url: property.heroImageUrl }, ...merged]
       : merged;
+
     const uniqueByUrl = withHeroFirst.filter(
-      (img, index, arr) => arr.findIndex((candidate) => candidate.url === img.url) === index
+      (img, index, arr) =>
+        arr.findIndex((candidate) => candidate.url === img.url) === index
     );
-    if (uniqueByUrl.length === 0) {
-      return [];
-    }
+
+    if (uniqueByUrl.length === 0) return [];
     return uniqueByUrl.slice(0, 12);
   }, [property.heroImageUrl, propertyImages, roomTypePhotos]);
+
+  const roomTypeCount = property.roomTypes?.length ?? 0;
+  const galleryCount = heroFrames.length;
+
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroDirection, setHeroDirection] = useState(1);
 
   useEffect(() => {
     if (heroIndex >= heroFrames.length) setHeroIndex(0);
   }, [heroFrames.length, heroIndex]);
+
   return (
-    <Card className="group overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+    <Card className="group overflow-hidden rounded-[28px] border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
       <CardContent className="p-0">
         <div className="flex h-full flex-col">
           <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
@@ -288,7 +290,7 @@ function PropertyCard({ property }: { property: B2BProperty }) {
               </>
             ) : null}
 
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent p-4">
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-4">
               <div className="flex items-end justify-between gap-3">
                 <div className="min-w-0">
                   <p className="line-clamp-2 text-base font-semibold text-white sm:text-lg">
@@ -302,68 +304,77 @@ function PropertyCard({ property }: { property: B2BProperty }) {
                   ) : null}
                 </div>
 
-                <Badge className="shrink-0 rounded-full border-0 light:bg-white/90 dark:bg-black/90 px-3 py-1.5 text-[11px] font-medium text-foreground shadow-sm backdrop-blur">
-                  Explore
+                <Badge className="shrink-0 rounded-full border-0 bg-black/70 px-3 py-1.5 text-[11px] font-medium text-white shadow-sm backdrop-blur">
+                  {galleryCount > 0 ? `${galleryCount} photos` : "Explore"}
                 </Badge>
               </div>
             </div>
-
           </div>
 
           <div className="space-y-4 p-4 sm:p-5">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <InfoPill
-                icon={<Building2 className="h-4 w-4" />}
-                label="Property"
-                value={property.publicName}
+            <div className="flex flex-wrap gap-2">
+              <MetaPill
+                icon={<Camera className="h-3.5 w-3.5" />}
+                label={`${galleryCount || 0} photos`}
               />
-              <InfoPill
-                icon={<MapPin className="h-4 w-4" />}
-                label="Location"
-                value={location || "Location not added"}
+              <MetaPill
+                icon={<Building2 className="h-3.5 w-3.5" />}
+                label={`${roomTypeCount} room type${roomTypeCount === 1 ? "" : "s"}`}
+              />
+              <MetaPill
+                icon={<MapPin className="h-3.5 w-3.5" />}
+                label={mapsUrl ? "Map available" : "Map unavailable"}
               />
             </div>
-            <div className="rounded-2xl border border-border/60 bg-muted/20 p-2.5">
-              <div className="relative h-24 w-full overflow-hidden rounded-xl border border-border/60 bg-muted">
-                {mapEmbedUrl ? (
-                  <iframe
-                    title={`${property.publicName} map preview`}
-                    src={mapEmbedUrl}
-                    className="h-full w-full"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                    Map preview unavailable (coordinates missing)
-                  </div>
-                )}
+
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_230px]">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+                <InfoPill
+                  icon={<Building2 className="h-4 w-4" />}
+                  label="Property"
+                  value={property.publicName}
+                />
+                <InfoPill
+                  icon={<MapPin className="h-4 w-4" />}
+                  label="Location"
+                  value={location || "Location not added"}
+                />
               </div>
-              <div className="mt-2 flex justify-end">
-                {mapsUrl ? (
-                  <Button asChild size="sm" variant="secondary" className="h-8 rounded-lg px-3 text-xs">
-                    <a href={mapsUrl} target="_blank" rel="noreferrer">
-                      <MapPin className="mr-1.5 h-3.5 w-3.5" />
-                      Open in Google Maps
-                      <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
-                    </a>
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    className="h-8 rounded-lg px-3 text-xs"
-                    disabled
-                  >
-                    <MapPin className="mr-1.5 h-3.5 w-3.5" />
-                    Map unavailable
-                  </Button>
-                )}
+
+              <div className="rounded-[22px] border border-border/60 bg-muted/20 p-2.5">
+                <div className="mb-2 flex items-center justify-between gap-2 px-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Map preview
+                  </p>
+                  {mapsUrl ? (
+                    <Badge variant="secondary" className="rounded-full px-2.5 py-0.5 text-[10px]">
+                      Live
+                    </Badge>
+                  ) : null}
+                </div>
+
+                <div className="relative aspect-[5/4] w-full overflow-hidden rounded-2xl border border-border/60 bg-muted md:aspect-square">
+                  {mapEmbedUrl ? (
+                    <iframe
+                      title={`${property.publicName} map preview`}
+                      src={mapEmbedUrl}
+                      className="h-full w-full"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  ) : (
+                    <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-xs text-muted-foreground">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-background">
+                        <MapPin className="h-4 w-4" />
+                      </div>
+                      <p>Map preview unavailable</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
               <Button
                 asChild
                 size="lg"
@@ -374,89 +385,121 @@ function PropertyCard({ property }: { property: B2BProperty }) {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button
-                    type="button"
-                    size="lg"
-                    variant="outline"
-                    className="h-12 w-full rounded-2xl text-sm font-medium"
-                  >
-                    <Camera className="mr-2 h-4 w-4" />
-                    View full gallery
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-3xl">
-                  <SheetHeader>
-                    <SheetTitle>{property.publicName}</SheetTitle>
-                    <SheetDescription>
-                      Property photos first, then room-type galleries.
-                    </SheetDescription>
-                  </SheetHeader>
 
-                  <div className="mt-5 space-y-5">
-                    <div>
-                      <p className="mb-2 text-sm font-semibold">Property photos</p>
-                      {propertyImages.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                          {propertyImages.map((img, index) => (
-                            <div
-                              key={`${img.url}-${index}`}
-                              className="relative aspect-[4/3] overflow-hidden rounded-xl border border-border/60 bg-muted"
-                            >
-                              <Image
-                                src={img.url}
-                                alt={`${property.publicName} property photo ${index + 1}`}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 640px) 100vw, 50vw"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">No property photos available.</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-4">
-                      <p className="text-sm font-semibold">Room-type photos</p>
-                      {roomTypePhotos.some((room) => room.images.length > 0) ? (
-                        roomTypePhotos.map((room) => (
-                          <div key={room.id}>
-                            <p className="mb-2 text-sm font-medium">{room.name}</p>
-                            {room.images.length > 0 ? (
-                              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                                {room.images.map((img, index) => (
-                                  <div
-                                    key={`${room.id}-${img.url}-${index}`}
-                                    className="relative aspect-square overflow-hidden rounded-lg border border-border/60 bg-muted"
-                                  >
-                                    <Image
-                                      src={img.url}
-                                      alt={`${room.name} photo ${index + 1}`}
-                                      fill
-                                      className="object-cover"
-                                      sizes="(max-width: 640px) 50vw, 25vw"
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-xs text-muted-foreground">No photos for this room type.</p>
-                            )}
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          Room-type photos are not available yet.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
+              {mapsUrl ? (
+                <Button
+                  asChild
+                  size="lg"
+                  variant="secondary"
+                  className="h-12 w-full rounded-2xl px-4 text-sm font-medium sm:w-auto"
+                >
+                  <a href={mapsUrl} target="_blank" rel="noreferrer">
+                    <MapPin className="mr-2 h-4 w-4" />
+                    Open map
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="secondary"
+                  className="h-12 w-full rounded-2xl px-4 text-sm font-medium sm:w-auto"
+                  disabled
+                >
+                  <MapPin className="mr-2 h-4 w-4" />
+                  Map unavailable
+                </Button>
+              )}
             </div>
+
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="outline"
+                  className="h-12 w-full rounded-2xl text-sm font-medium"
+                >
+                  <Camera className="mr-2 h-4 w-4" />
+                  View full gallery
+                </Button>
+              </SheetTrigger>
+
+              <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-3xl">
+                <SheetHeader>
+                  <SheetTitle>{property.publicName}</SheetTitle>
+                  <SheetDescription>
+                    Property photos first, then room-type galleries.
+                  </SheetDescription>
+                </SheetHeader>
+
+                <div className="mt-5 space-y-5">
+                  <div>
+                    <p className="mb-2 text-sm font-semibold">Property photos</p>
+                    {propertyImages.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {propertyImages.map((img, index) => (
+                          <div
+                            key={`${img.url}-${index}`}
+                            className="relative aspect-[4/3] overflow-hidden rounded-xl border border-border/60 bg-muted"
+                          >
+                            <Image
+                              src={img.url}
+                              alt={`${property.publicName} property photo ${index + 1}`}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 640px) 100vw, 50vw"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No property photos available.
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-4">
+                    <p className="text-sm font-semibold">Room-type photos</p>
+                    {roomTypePhotos.some((room) => room.images.length > 0) ? (
+                      roomTypePhotos.map((room) => (
+                        <div key={room.id}>
+                          <p className="mb-2 text-sm font-medium">{room.name}</p>
+                          {room.images.length > 0 ? (
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                              {room.images.map((img, index) => (
+                                <div
+                                  key={`${room.id}-${img.url}-${index}`}
+                                  className="relative aspect-square overflow-hidden rounded-lg border border-border/60 bg-muted"
+                                >
+                                  <Image
+                                    src={img.url}
+                                    alt={`${room.name} photo ${index + 1}`}
+                                    fill
+                                    className="object-cover"
+                                    sizes="(max-width: 640px) 50vw, 25vw"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground">
+                              No photos for this room type.
+                            </p>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Room-type photos are not available yet.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </CardContent>
@@ -466,6 +509,7 @@ function PropertyCard({ property }: { property: B2BProperty }) {
 
 function parseCoordsFromGoogleMapUrl(url?: string): { lat: number; lng: number } | null {
   if (!url) return null;
+
   const decoded = decodeURIComponent(url);
   const patterns = [
     /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/,
@@ -476,12 +520,31 @@ function parseCoordsFromGoogleMapUrl(url?: string): { lat: number; lng: number }
   for (const pattern of patterns) {
     const match = decoded.match(pattern);
     if (!match) continue;
+
     const lat = Number(match[1]);
     const lng = Number(match[2]);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
+
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      return { lat, lng };
+    }
   }
 
   return null;
+}
+
+function MetaPill({
+  icon,
+  label,
+}: {
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground">
+      <span className="text-primary">{icon}</span>
+      <span>{label}</span>
+    </div>
+  );
 }
 
 function InfoPill({
@@ -494,11 +557,12 @@ function InfoPill({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-background p-3">
+    <div className="rounded-[22px] border border-border/60 bg-background p-3.5">
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           {icon}
         </div>
+
         <div className="min-w-0">
           <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             {label}
@@ -522,41 +586,49 @@ function PropertiesLoading() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22, delay: i * 0.05 }}
         >
-          <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
+          <Card className="overflow-hidden rounded-[28px] border border-border/60 bg-card shadow-sm">
             <CardContent className="p-0">
               <Skeleton className="aspect-[16/10] w-full" />
+
               <div className="space-y-4 p-4 sm:p-5">
-                <div className="space-y-2">
-                  <Skeleton className="h-6 w-40 rounded-xl" />
-                  <Skeleton className="h-4 w-56 rounded-xl" />
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-8 w-24 rounded-full" />
+                  <Skeleton className="h-8 w-28 rounded-full" />
+                  <Skeleton className="h-8 w-24 rounded-full" />
                 </div>
 
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-border/60 p-3">
-                    <div className="flex items-start gap-3">
-                      <Skeleton className="h-9 w-9 rounded-xl" />
-                      <div className="w-full space-y-2">
-                        <Skeleton className="h-3 w-20 rounded-xl" />
-                        <Skeleton className="h-4 w-32 rounded-xl" />
+                <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_230px]">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+                    <div className="rounded-[22px] border border-border/60 p-3.5">
+                      <div className="flex items-start gap-3">
+                        <Skeleton className="h-10 w-10 rounded-2xl" />
+                        <div className="w-full space-y-2">
+                          <Skeleton className="h-3 w-20 rounded-xl" />
+                          <Skeleton className="h-4 w-32 rounded-xl" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[22px] border border-border/60 p-3.5">
+                      <div className="flex items-start gap-3">
+                        <Skeleton className="h-10 w-10 rounded-2xl" />
+                        <div className="w-full space-y-2">
+                          <Skeleton className="h-3 w-20 rounded-xl" />
+                          <Skeleton className="h-4 w-40 rounded-xl" />
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-border/60 p-3">
-                    <div className="flex items-start gap-3">
-                      <Skeleton className="h-9 w-9 rounded-xl" />
-                      <div className="w-full space-y-2">
-                        <Skeleton className="h-3 w-20 rounded-xl" />
-                        <Skeleton className="h-4 w-36 rounded-xl" />
-                      </div>
-                    </div>
+                  <div className="rounded-[22px] border border-border/60 p-2.5">
+                    <Skeleton className="mb-2 h-3 w-20 rounded-xl" />
+                    <Skeleton className="aspect-[5/4] w-full rounded-2xl md:aspect-square" />
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-border/60 p-3.5">
-                  <Skeleton className="h-4 w-36 rounded-xl" />
-                  <Skeleton className="mt-2 h-3 w-full rounded-xl" />
-                  <Skeleton className="mt-2 h-3 w-4/5 rounded-xl" />
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                  <Skeleton className="h-12 w-full rounded-2xl" />
+                  <Skeleton className="h-12 w-full rounded-2xl sm:w-36" />
                 </div>
 
                 <Skeleton className="h-12 w-full rounded-2xl" />
