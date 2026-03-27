@@ -3,20 +3,16 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Building2, FileText, PlusCircle, LogOut, Menu, X } from "lucide-react";
+import { Building2, LogOut, Menu, Phone, X } from "lucide-react";
 import { b2bLogout, b2bMe, type B2BPartnerMe } from "@/lib/b2b-api";
 import { Logo } from "@/components/Logo";
-import ZenvanaLoading from "@/components/Zenvanaloading";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/properties", label: "Properties", icon: Building2 },
-  { href: "/quotes", label: "Quotes", icon: FileText },
-  { href: "/quotes/new", label: "New Quote", icon: PlusCircle },
+  { href: "/properties", label: "Rate Sheet", icon: Building2 },
+  { href: "/contact-us", label: "Contact Us", icon: Phone },
 ];
 
 function isActive(pathname: string, href: string) {
-  if (href === "/dashboard") return pathname === "/dashboard";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -49,29 +45,19 @@ export default function ProtectedShell({ children }: { children: React.ReactNode
     router.replace("/login");
   }
 
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-background p-4">
-        <ZenvanaLoading
-          variant="page"
-          title="Loading B2B workspace"
-          description="Preparing partner profile, navigation, and workspace context."
-        />
-      </main>
-    );
-  }
-
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <Link href="/dashboard" className="flex min-w-0 items-center gap-2">
+          <Link href="/properties" className="flex min-w-0 items-center gap-2">
             <Logo className="h-11 w-auto sm:h-12" />
             <div className="min-w-0">
               <p className="truncate text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                 B2B Portal
               </p>
-              <p className="truncate text-sm font-semibold">{partner?.agencyName}</p>
+              <p className="truncate text-sm font-semibold">
+                {partner?.agencyName || (loading ? "Loading partner..." : "Partner")}
+              </p>
             </div>
           </Link>
 

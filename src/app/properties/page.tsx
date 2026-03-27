@@ -2,11 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   Building2,
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
   ImageIcon,
   MapPin,
   RefreshCcw,
@@ -21,6 +25,30 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { normalizeGalleryImages } from "@/lib/media";
+
+const heroSlideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 70 : -70,
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    x: direction > 0 ? -70 : 70,
+    opacity: 0,
+  }),
+};
 
 export default function PropertiesPage() {
   const [rows, setRows] = useState<B2BProperty[]>([]);
@@ -83,12 +111,11 @@ export default function PropertiesPage() {
                   </h1>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
                     Start with the hotel your client wants. Open rates and inventory
-                    to check availability, compare options, and move faster with
-                    confidence.
+                    to check availability and compare options.
                   </p>
                 </div>
 
-                {!loading && !error && rows.length > 0 ? (
+                {/* {!loading && !error && rows.length > 0 ? (
                   <div className="shrink-0">
                     <Badge
                       variant="outline"
@@ -97,7 +124,7 @@ export default function PropertiesPage() {
                       {rows.length} {rows.length === 1 ? "property" : "properties"}
                     </Badge>
                   </div>
-                ) : null}
+                ) : null} */}
               </div>
             </div>
           </motion.div>
@@ -148,21 +175,81 @@ export default function PropertiesPage() {
 
 function PropertyCard({ property }: { property: B2BProperty }) {
   const location = [property.city, property.state].filter(Boolean).join(", ");
+  const parsedCoordsFromMapUrl = useMemo(
+    () => parseCoordsFromGoogleMapUrl(property.googleMapPlaceUrl),
+    [property.googleMapPlaceUrl]
+  );
+  const mapLatitude = property.latitude ?? parsedCoordsFromMapUrl?.lat;
+  const mapLongitude = property.longitude ?? parsedCoordsFromMapUrl?.lng;
+  const hasCoordinates = Number.isFinite(mapLatitude) && Number.isFinite(mapLongitude);
+  const mapsUrl = property.googleMapPlaceUrl
+    ? property.googleMapPlaceUrl
+    : hasCoordinates
+      ? `https://www.google.com/maps?q=${mapLatitude},${mapLongitude}`
+      : null;
+  const mapEmbedUrl = hasCoordinates
+    ? `https://www.google.com/maps?q=${mapLatitude},${mapLongitude}&z=14&output=embed`
+    : null;
+  const propertyImages = useMemo(
+    () => normalizeGalleryImages(property.images ?? []),
+    [property.images]
+  );
+  const roomTypePhotos = useMemo(
+    () =>
+      (property.roomTypes ?? []).map((room) => ({
+        id: room.id,
+        name: room.name,
+        images: normalizeGalleryImages(room.images ?? []),
+      })),
+    [property.roomTypes]
+  );
+  const heroFrames = useMemo(() => {
+    const roomImages = roomTypePhotos.flatMap((room) => room.images);
+    const merged = [...propertyImages, ...roomImages];
+    const withHeroFirst = property.heroImageUrl
+      ? [{ url: property.heroImageUrl }, ...merged]
+      : merged;
+    const uniqueByUrl = withHeroFirst.filter(
+      (img, index, arr) => arr.findIndex((candidate) => candidate.url === img.url) === index
+    );
+    if (uniqueByUrl.length === 0) {
+      return [];
+    }
+    return uniqueByUrl.slice(0, 12);
+  }, [property.heroImageUrl, propertyImages, roomTypePhotos]);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [heroDirection, setHeroDirection] = useState(1);
 
+  useEffect(() => {
+    if (heroIndex >= heroFrames.length) setHeroIndex(0);
+  }, [heroFrames.length, heroIndex]);
   return (
     <Card className="group overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
       <CardContent className="p-0">
         <div className="flex h-full flex-col">
           <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-            {property.heroImageUrl ? (
-              <Image
-                src={property.heroImageUrl}
-                alt={property.publicName}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                priority={false}
-              />
+            {heroFrames.length > 0 ? (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={heroFrames[heroIndex]?.url || property.publicName}
+                  custom={heroDirection}
+                  variants={heroSlideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.38, ease: "easeOut" }}
+                  className="absolute inset-0"
+                >
+                  <Image
+                    src={heroFrames[heroIndex].url}
+                    alt={property.publicName}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    priority={false}
+                  />
+                </motion.div>
+              </AnimatePresence>
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-muted">
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
@@ -173,6 +260,33 @@ function PropertyCard({ property }: { property: B2BProperty }) {
                 </div>
               </div>
             )}
+
+            {heroFrames.length > 1 ? (
+              <>
+                <button
+                  type="button"
+                  aria-label="Previous image"
+                  onClick={() => {
+                    setHeroDirection(-1);
+                    setHeroIndex((prev) => (prev - 1 + heroFrames.length) % heroFrames.length);
+                  }}
+                  className="absolute left-3 top-1/2 z-10 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white backdrop-blur-md transition hover:bg-white/25"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next image"
+                  onClick={() => {
+                    setHeroDirection(1);
+                    setHeroIndex((prev) => (prev + 1) % heroFrames.length);
+                  }}
+                  className="absolute right-3 top-1/2 z-10 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white backdrop-blur-md transition hover:bg-white/25"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </>
+            ) : null}
 
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent p-4">
               <div className="flex items-end justify-between gap-3">
@@ -193,6 +307,7 @@ function PropertyCard({ property }: { property: B2BProperty }) {
                 </Badge>
               </div>
             </div>
+
           </div>
 
           <div className="space-y-4 p-4 sm:p-5">
@@ -208,32 +323,165 @@ function PropertyCard({ property }: { property: B2BProperty }) {
                 value={location || "Location not added"}
               />
             </div>
-
-            <div className="rounded-2xl border border-border/60 bg-muted/40 p-3.5">
-              <p className="text-sm font-medium text-foreground">
-                Next step for the agent
-              </p>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground sm:text-sm">
-                Open this property to view room-wise rates, inventory, and booking
-                options for your client.
-              </p>
+            <div className="rounded-2xl border border-border/60 bg-muted/20 p-2.5">
+              <div className="relative h-24 w-full overflow-hidden rounded-xl border border-border/60 bg-muted">
+                {mapEmbedUrl ? (
+                  <iframe
+                    title={`${property.publicName} map preview`}
+                    src={mapEmbedUrl}
+                    className="h-full w-full"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+                    Map preview unavailable (coordinates missing)
+                  </div>
+                )}
+              </div>
+              <div className="mt-2 flex justify-end">
+                {mapsUrl ? (
+                  <Button asChild size="sm" variant="secondary" className="h-8 rounded-lg px-3 text-xs">
+                    <a href={mapsUrl} target="_blank" rel="noreferrer">
+                      <MapPin className="mr-1.5 h-3.5 w-3.5" />
+                      Open in Google Maps
+                      <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
+                    </a>
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    className="h-8 rounded-lg px-3 text-xs"
+                    disabled
+                  >
+                    <MapPin className="mr-1.5 h-3.5 w-3.5" />
+                    Map unavailable
+                  </Button>
+                )}
+              </div>
             </div>
 
-            <Button
-              asChild
-              size="lg"
-              className="h-12 w-full rounded-2xl text-sm font-medium shadow-sm"
-            >
-              <Link href={`/properties/${property.slug}/rates-inventory`}>
-                View rates & inventory
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Button
+                asChild
+                size="lg"
+                className="h-12 w-full rounded-2xl text-sm font-medium shadow-sm"
+              >
+                <Link href={`/properties/${property.slug}/rate-sheet`}>
+                  Open rate sheet
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    type="button"
+                    size="lg"
+                    variant="outline"
+                    className="h-12 w-full rounded-2xl text-sm font-medium"
+                  >
+                    <Camera className="mr-2 h-4 w-4" />
+                    View full gallery
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-3xl">
+                  <SheetHeader>
+                    <SheetTitle>{property.publicName}</SheetTitle>
+                    <SheetDescription>
+                      Property photos first, then room-type galleries.
+                    </SheetDescription>
+                  </SheetHeader>
+
+                  <div className="mt-5 space-y-5">
+                    <div>
+                      <p className="mb-2 text-sm font-semibold">Property photos</p>
+                      {propertyImages.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          {propertyImages.map((img, index) => (
+                            <div
+                              key={`${img.url}-${index}`}
+                              className="relative aspect-[4/3] overflow-hidden rounded-xl border border-border/60 bg-muted"
+                            >
+                              <Image
+                                src={img.url}
+                                alt={`${property.publicName} property photo ${index + 1}`}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 640px) 100vw, 50vw"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No property photos available.</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-4">
+                      <p className="text-sm font-semibold">Room-type photos</p>
+                      {roomTypePhotos.some((room) => room.images.length > 0) ? (
+                        roomTypePhotos.map((room) => (
+                          <div key={room.id}>
+                            <p className="mb-2 text-sm font-medium">{room.name}</p>
+                            {room.images.length > 0 ? (
+                              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                {room.images.map((img, index) => (
+                                  <div
+                                    key={`${room.id}-${img.url}-${index}`}
+                                    className="relative aspect-square overflow-hidden rounded-lg border border-border/60 bg-muted"
+                                  >
+                                    <Image
+                                      src={img.url}
+                                      alt={`${room.name} photo ${index + 1}`}
+                                      fill
+                                      className="object-cover"
+                                      sizes="(max-width: 640px) 50vw, 25vw"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-muted-foreground">No photos for this room type.</p>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Room-type photos are not available yet.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </CardContent>
     </Card>
   );
+}
+
+function parseCoordsFromGoogleMapUrl(url?: string): { lat: number; lng: number } | null {
+  if (!url) return null;
+  const decoded = decodeURIComponent(url);
+  const patterns = [
+    /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/,
+    /[?&](?:q|query)=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/,
+    /!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = decoded.match(pattern);
+    if (!match) continue;
+    const lat = Number(match[1]);
+    const lng = Number(match[2]);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
+  }
+
+  return null;
 }
 
 function InfoPill({

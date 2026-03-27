@@ -8,7 +8,7 @@ export const loginSchema = z.object({
 export const ratesFilterSchema = z.object({
   checkIn: z.string().min(1, "Check-in is required"),
   checkOut: z.string().min(1, "Check-out is required"),
-  occupancy: z.coerce.number().int().min(1).max(8).optional(),
+  occupancy: z.coerce.number().int().min(1).max(3).optional(),
 });
 
 export const quoteLineSchema = z.object({

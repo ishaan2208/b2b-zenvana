@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, type ReactNode } from "react";
+import Image from "next/image";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { addDays, format, isAfter, isBefore, parseISO, startOfToday } from "date-fns";
 import {
   ArrowRight,
   BedDouble,
   CalendarDays,
+  CalendarIcon,
   CheckCircle2,
   Hotel,
   ImageIcon,
@@ -21,21 +24,39 @@ import {
   RefreshCcw,
   Sparkles,
   Users,
+  ChevronDown,
 } from "lucide-react";
 import type { z } from "zod";
 
 import ProtectedShell from "@/components/b2b/ProtectedShell";
 import { EmblaImageGallery } from "@/components/EmblaImageGallery";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { b2bRatesInventory, type B2BRatesInventory } from "@/lib/b2b-api";
 import { normalizeGalleryImages, pickHeroAndGallery } from "@/lib/media";
 import { ratesFilterSchema } from "@/lib/b2b-schemas";
 import ZenvanaLoading from "@/components/Zenvanaloading";
+import { cn } from "@/lib/utils";
 
 type FormData = z.infer<typeof ratesFilterSchema>;
 
@@ -43,6 +64,15 @@ function todayPlus(days: number) {
   const d = new Date();
   d.setDate(d.getDate() + days);
   return d.toISOString().slice(0, 10);
+}
+
+function safeParseDate(value?: string) {
+  if (!value) return undefined;
+  try {
+    return parseISO(value);
+  } catch {
+    return undefined;
+  }
 }
 
 const formatINR = (value: number) =>
@@ -57,11 +87,13 @@ export default function RatesInventoryPage() {
   const { slug } = useParams<{ slug: string }>();
   const [result, setResult] = useState<B2BRatesInventory | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fallbackNote, setFallbackNote] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
   const {
-    register,
+    control,
     handleSubmit,
+    setValue,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
@@ -74,18 +106,46 @@ export default function RatesInventoryPage() {
   });
 
   const occupancy = watch("occupancy");
+  const selectedCheckIn = watch("checkIn");
+  const selectedCheckOut = watch("checkOut");
+
+  useEffect(() => {
+    const checkInDate = safeParseDate(selectedCheckIn);
+    const checkOutDate = safeParseDate(selectedCheckOut);
+    if (!checkInDate || !checkOutDate) return;
+
+    if (!isAfter(checkOutDate, checkInDate)) {
+      setValue("checkOut", format(addDays(checkInDate, 1), "yyyy-MM-dd"), {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  }, [selectedCheckIn, selectedCheckOut, setValue]);
 
   const onSubmit = handleSubmit(async (values) => {
     setHasSearched(true);
     setError(null);
+    setFallbackNote(null);
 
     try {
-      const data = await b2bRatesInventory(
+      let data = await b2bRatesInventory(
         slug,
         values.checkIn,
         values.checkOut,
         values.occupancy
       );
+
+      const hasThreeOccPlan = data.roomTypes.some((room) =>
+        (room.ratePlans ?? []).some((plan) => plan.occupancy === 3)
+      );
+      const shouldFallbackToTwoOcc = values.occupancy === 3 && !hasThreeOccPlan;
+
+      if (shouldFallbackToTwoOcc) {
+        data = await b2bRatesInventory(slug, values.checkIn, values.checkOut, 2);
+        setValue("occupancy", 2, { shouldDirty: true, shouldValidate: true });
+        setFallbackNote("3 occupancy plans were unavailable, so 2 occupancy plans are shown.");
+      }
+
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load data");
@@ -161,7 +221,20 @@ export default function RatesInventoryPage() {
               label="Check-in"
               helpText="Arrival date"
             >
-              <Input type="date" className="h-12 rounded-2xl" {...register("checkIn")} />
+              <Controller
+                control={control}
+                name="checkIn"
+                render={({ field }) => (
+                  <DatePickerField
+                    value={field.value}
+                    placeholder="Pick check-in date"
+                    onSelect={(date) => {
+                      field.onChange(date ? format(date, "yyyy-MM-dd") : "");
+                    }}
+                    disabled={(date) => isBefore(date, startOfToday())}
+                  />
+                )}
+              />
               {errors.checkIn ? (
                 <p className="text-xs text-destructive">{errors.checkIn.message}</p>
               ) : null}
@@ -172,7 +245,24 @@ export default function RatesInventoryPage() {
               label="Check-out"
               helpText="Departure date"
             >
-              <Input type="date" className="h-12 rounded-2xl" {...register("checkOut")} />
+              <Controller
+                control={control}
+                name="checkOut"
+                render={({ field }) => (
+                  <DatePickerField
+                    value={field.value}
+                    placeholder="Pick check-out date"
+                    onSelect={(date) => {
+                      field.onChange(date ? format(date, "yyyy-MM-dd") : "");
+                    }}
+                    disabled={(date) => {
+                      const checkInDate = safeParseDate(selectedCheckIn);
+                      if (!checkInDate) return isBefore(date, startOfToday());
+                      return !isAfter(date, checkInDate);
+                    }}
+                  />
+                )}
+              />
               {errors.checkOut ? (
                 <p className="text-xs text-destructive">{errors.checkOut.message}</p>
               ) : null}
@@ -183,12 +273,24 @@ export default function RatesInventoryPage() {
               label="Occupancy"
               helpText="Per room"
             >
-              <Input
-                type="number"
-                min={1}
-                max={8}
-                className="h-12 rounded-2xl"
-                {...register("occupancy")}
+              <Controller
+                control={control}
+                name="occupancy"
+                render={({ field }) => (
+                  <Select
+                    value={String(field.value ?? 2)}
+                    onValueChange={(value) => field.onChange(Number(value))}
+                  >
+                    <SelectTrigger className="h-12 rounded-2xl">
+                      <SelectValue placeholder="Select occupancy" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 guest</SelectItem>
+                      <SelectItem value="2">2 guests</SelectItem>
+                      <SelectItem value="3">3 guests</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               />
             </FieldShell>
 
@@ -230,6 +332,52 @@ export default function RatesInventoryPage() {
               </div>
             </div>
           </div>
+
+          <div className="mt-3 flex justify-end">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button type="button" variant="outline" className="h-10 rounded-2xl">
+                  View OGF photos
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-2xl">
+                <SheetHeader>
+                  <SheetTitle>OGF photos</SheetTitle>
+                  <SheetDescription>
+                    {result
+                      ? `${result.property.publicName} gallery (${propertyGallery.length} photos)`
+                      : "Run a live search to load property photos."}
+                  </SheetDescription>
+                </SheetHeader>
+                {!result ? (
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    Search live rates first, then you can browse the OGF property photos here.
+                  </p>
+                ) : hasGallery ? (
+                  <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {propertyGallery.map((img, index) => (
+                      <div
+                        key={`${img.url}-${index}`}
+                        className="relative aspect-[4/3] overflow-hidden rounded-xl border border-border/60 bg-muted"
+                      >
+                        <Image
+                          src={img.url}
+                          alt={`${result.property.publicName} photo ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 640px) 100vw, 50vw"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    No photos available for this property yet.
+                  </p>
+                )}
+              </SheetContent>
+            </Sheet>
+          </div>
         </motion.form>
 
         <AnimatePresence mode="wait">
@@ -248,6 +396,12 @@ export default function RatesInventoryPage() {
             </motion.div>
           ) : null}
         </AnimatePresence>
+        {fallbackNote ? (
+          <Alert className="rounded-2xl border-primary/20 bg-primary/5 text-foreground">
+            <AlertTitle>Occupancy fallback applied</AlertTitle>
+            <AlertDescription>{fallbackNote}</AlertDescription>
+          </Alert>
+        ) : null}
 
         {isSubmitting && !result ? (
           <ZenvanaLoading
@@ -624,6 +778,53 @@ function RoomRateCard({
         </CardContent>
       </Card>
     </motion.article>
+  );
+}
+
+function DatePickerField({
+  value,
+  placeholder,
+  onSelect,
+  disabled,
+}: {
+  value?: string;
+  placeholder: string;
+  onSelect: (date?: Date) => void;
+  disabled?: (date: Date) => boolean;
+}) {
+  const parsed = safeParseDate(value);
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className={cn(
+            "h-12 w-full justify-between rounded-2xl px-3 font-normal",
+            !parsed && "text-muted-foreground"
+          )}
+        >
+          <span className="flex items-center gap-2 truncate">
+            <CalendarIcon className="h-4 w-4 shrink-0" />
+            <span className="truncate">{parsed ? format(parsed, "PPP") : placeholder}</span>
+          </span>
+          <ChevronDown className="h-4 w-4 shrink-0 opacity-60" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-auto rounded-[1.25rem] border border-border/60 p-0"
+      >
+        <Calendar
+          mode="single"
+          selected={parsed}
+          onSelect={onSelect}
+          disabled={disabled}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
   );
 }
 
