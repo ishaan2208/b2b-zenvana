@@ -5,6 +5,23 @@ export const loginSchema = z.object({
   password: z.string().min(4, "Password must be at least 4 characters"),
 });
 
+export const masterLoginSchema = z.object({
+  username: z.string().trim().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const createVendorSchema = z.object({
+  agencyName: z.string().trim().min(1, "Agency name is required").max(200),
+  code: z.string().trim().min(3, "Agency code must be at least 3 characters").max(64),
+  password: z.string().min(4, "Password must be at least 4 characters").max(128),
+  email: z
+    .string()
+    .trim()
+    .optional()
+    .refine((v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "Invalid email"),
+  phone: z.string().trim().max(40).optional(),
+});
+
 export const ratesFilterSchema = z.object({
   checkIn: z.string().min(1, "Check-in is required"),
   checkOut: z.string().min(1, "Check-out is required"),

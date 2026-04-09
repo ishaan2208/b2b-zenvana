@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -154,6 +155,14 @@ export default function LoginPage() {
                       </>
                     )}
                   </Button>
+                  <p className="pt-2 text-center text-xs text-slate-500">
+                    <Link
+                      href="/master/login"
+                      className="text-slate-400 underline-offset-4 hover:text-slate-200 hover:underline"
+                    >
+                      Master admin — create partner accounts
+                    </Link>
+                  </p>
                 </form>
               </Card>
             </div>

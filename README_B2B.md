@@ -27,3 +27,19 @@ Set frontend env:
 If not seeded, run:
 
 - `pnpm seed:b2b-demo` in `backend`
+
+## Master admin (create partner accounts)
+
+Set on the **backend** (same machine as the API):
+
+- `B2B_MASTER_USERNAME` — internal admin username
+- `B2B_MASTER_PASSWORD` — internal admin password
+
+Then open the B2B app at **`/master/login`**, sign in, and use **Partner accounts** (`/master/vendors`) to create agencies. Partners use **agency code + password** on `/login` as usual.
+
+Master routes (authenticated with the JWT returned from master login):
+
+- `POST /api/v1/b2b/master/login`
+- `GET /api/v1/b2b/master/session`
+- `GET /api/v1/b2b/master/vendors` — list partners
+- `POST /api/v1/b2b/master/vendors` — create partner
