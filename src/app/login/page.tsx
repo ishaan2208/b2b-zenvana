@@ -160,7 +160,7 @@ export default function LoginPage() {
                       href="/master/login"
                       className="text-slate-400 underline-offset-4 hover:text-slate-200 hover:underline"
                     >
-                      Master admin — create partner accounts
+                      Master Login
                     </Link>
                   </p>
                 </form>
