@@ -1,0 +1,52 @@
+
+> b2b-partner@0.1.0 build /Users/ishaanbajaj/Desktop/staysystems/b2b-partner
+> next build
+
+  ▲ Next.js 14.2.5
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+request to https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap failed, reason: getaddrinfo ENOTFOUND fonts.googleapis.com
+
+Retrying 1/3...
+request to https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap failed, reason: getaddrinfo ENOTFOUND fonts.googleapis.com
+
+Retrying 1/3...
+request to https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap failed, reason: getaddrinfo ENOTFOUND fonts.googleapis.com
+
+Retrying 2/3...
+request to https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap failed, reason: getaddrinfo ENOTFOUND fonts.googleapis.com
+
+Retrying 2/3...
+request to https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap failed, reason: getaddrinfo ENOTFOUND fonts.googleapis.com
+
+Retrying 3/3...
+request to https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap failed, reason: getaddrinfo ENOTFOUND fonts.googleapis.com
+
+Retrying 3/3...
+FetchError: request to https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap failed, reason: getaddrinfo ENOTFOUND fonts.googleapis.com
+    at ClientRequest.<anonymous> (/Users/ishaanbajaj/Desktop/staysystems/node_modules/.pnpm/next@14.2.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/node-fetch/index.js:1:66160)
+    at ClientRequest.emit (node:events:519:28)
+    at emitErrorEvent (node:_http_client:107:11)
+    at TLSSocket.socketErrorListener (node:_http_client:574:5)
+    at TLSSocket.emit (node:events:519:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  type: 'system',
+  errno: 'ENOTFOUND',
+  code: 'ENOTFOUND'
+}
+FetchError: request to https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap failed, reason: getaddrinfo ENOTFOUND fonts.googleapis.com
+    at ClientRequest.<anonymous> (/Users/ishaanbajaj/Desktop/staysystems/node_modules/.pnpm/next@14.2.5_@opentelemetry+api@1.9.0_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/node-fetch/index.js:1:66160)
+    at ClientRequest.emit (node:events:519:28)
+    at emitErrorEvent (node:_http_client:107:11)
+    at TLSSocket.socketErrorListener (node:_http_client:574:5)
+    at TLSSocket.emit (node:events:519:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  type: 'system',
+  errno: 'ENOTFOUND',
+  code: 'ENOTFOUND'
+}
